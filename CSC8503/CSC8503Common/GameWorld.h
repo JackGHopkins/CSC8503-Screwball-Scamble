@@ -53,6 +53,9 @@ namespace NCL {
 				std::vector<Constraint*>::const_iterator& first,
 				std::vector<Constraint*>::const_iterator& last) const;
 
+			bool GetBroadphaseAABB(Vector3& outsize) const;
+			void UpdateBroadphaseAABB();
+
 		protected:
 			std::vector<GameObject*> gameObjects;
 			std::vector<Constraint*> constraints;
@@ -62,6 +65,8 @@ namespace NCL {
 			bool	shuffleConstraints;
 			bool	shuffleObjects;
 			int		worldIDCounter;
+
+			Vector3 broadphaseAABB;
 		};
 	}
 }

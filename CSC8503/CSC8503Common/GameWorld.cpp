@@ -124,3 +124,4 @@ void GameWorld::GetConstraintIterators(
 	first	= constraints.begin();
 	last	= constraints.end();
 }
+

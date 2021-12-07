@@ -4,6 +4,7 @@
 #include "../../Plugins/OpenGLRendering/OGLShader.h"
 #include "../../Plugins/OpenGLRendering/OGLTexture.h"
 #include "../../Common/TextureLoader.h"
+#include "..//CSC8503Common/PositionConstraint.h"
 
 using namespace NCL;
 using namespace CSC8503;
@@ -244,14 +245,36 @@ void TutorialGame::InitWorld() {
 	world->ClearAndErase();
 	physics->Clear();
 
-	InitMixedGridWorld(5, 5, 3.5f, 3.5f);
-	InitGameExamples();
-	InitDefaultFloor();
+	//InitMixedGridWorld(5, 5, 3.5f, 3.5f);
+	InitCollisionTest();
+	//InitGameExamples();
+	//InitDefaultFloor();
+	//BridgeConstraintTest();
 }
 
 void TutorialGame::BridgeConstraintTest() {
-
-
+	Vector3 cubeSize = Vector3(8, 8, 8);
+	
+	float invCubeMass = 5; //how heavy the middle pieces are
+	int numLinks = 10;
+	float maxDistance = 30; // constraint distance
+	float cubeDistance = 20; // distance between links
+	
+	Vector3 startPos = Vector3(500, 500, 500);
+	
+	 GameObject * start = AddCubeToWorld(startPos + Vector3(0, 0, 0), cubeSize, Quaternion(0, 0, 0, 0), 0);
+	 GameObject * end = AddCubeToWorld(startPos + Vector3((numLinks + 2)* cubeDistance, 0, 0), cubeSize, Quaternion(0, 0, 0, 0), 0);
+	
+	 GameObject * previous = start;
+	
+	 for (int i = 0; i < numLinks; ++i) {
+	 GameObject * block = AddCubeToWorld(startPos + Vector3((i + 1) *cubeDistance, 0, 0), cubeSize, Quaternion(0, 0, 0, 0), invCubeMass);
+	 PositionConstraint * constraint = new PositionConstraint(previous,block, maxDistance);
+	 world->AddConstraint(constraint);
+	 previous = block;
+	}
+	PositionConstraint * constraint = new PositionConstraint(previous,end, maxDistance);
+	world->AddConstraint(constraint);
 }
 
 /*
@@ -331,16 +354,23 @@ GameObject* TutorialGame::AddCapsuleToWorld(const Vector3& position, float halfH
 
 }
 
-GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass) {
+GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimensions, Quaternion& orientation, float inverseMass) {
 	GameObject* cube = new GameObject();
 
-	AABBVolume* volume = new AABBVolume(dimensions);
+	if (orientation == Quaternion(0, 0, 0, 1)) {
+		AABBVolume* volume = new AABBVolume(dimensions);
+		cube->SetBoundingVolume((CollisionVolume*)volume);
+	}
+	else {
+		OBBVolume* volume = new OBBVolume(dimensions);
+		cube->SetBoundingVolume((CollisionVolume*)volume);
+	}
 
-	cube->SetBoundingVolume((CollisionVolume*)volume);
 
 	cube->GetTransform()
 		.SetPosition(position)
-		.SetScale(dimensions * 2);
+		.SetScale(dimensions * 2)
+		.SetOrientation(orientation);
 
 	cube->SetRenderObject(new RenderObject(&cube->GetTransform(), cubeMesh, basicTex, basicShader));
 	cube->SetPhysicsObject(new PhysicsObject(&cube->GetTransform(), cube->GetBoundingVolume()));
@@ -385,9 +415,16 @@ void TutorialGame::InitCubeGridWorld(int numRows, int numCols, float rowSpacing,
 	for (int x = 1; x < numCols+1; ++x) {
 		for (int z = 1; z < numRows+1; ++z) {
 			Vector3 position = Vector3(x * colSpacing, 10.0f, z * rowSpacing);
-			AddCubeToWorld(position, cubeDims, 1.0f);
+			AddCubeToWorld(position, cubeDims, Quaternion(0,0,0,0), 1.0f);
 		}
 	}
+}
+
+void TutorialGame::InitCollisionTest() {
+	float sphereRadius = 1.0f;
+	Vector3 cubeDims = Vector3(3, 4, 3);
+	AddCubeToWorld(Vector3(-5,5,-5), cubeDims, Quaternion(0, 0, 0.2, 1), 0);
+	AddSphereToWorld(Vector3(-5,15,-5), sphereRadius, 1.0f);
 }
 
 void TutorialGame::InitDefaultFloor() {

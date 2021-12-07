@@ -69,9 +69,6 @@
     <ClInclude Include="Constraint.h">
       <Filter>Physics</Filter>
     </ClInclude>
-    <ClInclude Include="PhysicsSystem.h">
-      <Filter>Physics</Filter>
-    </ClInclude>
     <ClInclude Include="SphereVolume.h">
       <Filter>CollisionDetection</Filter>
     </ClInclude>
@@ -101,6 +98,9 @@
     </ClInclude>
     <ClInclude Include="CapsuleVolume.h">
       <Filter>CollisionDetection</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicsSystem.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -148,6 +148,12 @@
     </ClCompile>
     <ClCompile Include="QuadTree.cpp">
       <Filter>CollisionDetection</Filter>
+    </ClCompile>
+    <ClCompile Include="PositionConstraint.h">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PositionConstraint.cpp">
+      <Filter>Physics</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

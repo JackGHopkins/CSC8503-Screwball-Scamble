@@ -354,6 +354,15 @@ bool CollisionDetection::ObjectIntersection(GameObject* a, GameObject* b, Collis
 		return SphereCapsuleIntersection((CapsuleVolume&)*volB, transformB, (SphereVolume&)*volA, transformA, collisionInfo);
 	}
 
+	if (volA->type == VolumeType::OBB && volB->type == VolumeType::Sphere) {
+		return SphereOBBIntersection((OBBVolume&)* volA, transformA, (SphereVolume&)* volB, transformB, collisionInfo);
+	}
+	if (volA->type == VolumeType::Sphere && volB->type == VolumeType::OBB) {
+		collisionInfo.a = b;
+		collisionInfo.b = a;
+		return SphereOBBIntersection((OBBVolume&)* volB, transformB, (SphereVolume&)* volA, transformA, collisionInfo);
+	}
+
 	return false;
 }
 
@@ -474,5 +483,33 @@ bool CollisionDetection::OBBIntersection(
 bool CollisionDetection::SphereCapsuleIntersection(
 	const CapsuleVolume& volumeA, const Transform& worldTransformA,
 	const SphereVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo) {
+	return false;
+}
+
+bool CollisionDetection::SphereOBBIntersection(const OBBVolume& volumeA, const Transform& worldTransformA,
+	const SphereVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo) {
+	
+	Vector4 localSphereTranslation = worldTransformB.GetPosition() - worldTransformA.GetPosition(); // Finding relative vector.
+	Quaternion inverseOBBQuaternion = worldTransformA.GetOrientation().Conjugate(); // Rotate OBB around its own center
+	localSphereTranslation = inverseOBBQuaternion * localSphereTranslation;	// Rotate Sphere around center of OBB
+
+	Vector3 boxSize = volumeA.GetHalfDimensions();
+
+	Vector3 closestPointOnBox = Maths::Clamp(localSphereTranslation, -boxSize, boxSize);
+
+	Vector3 localPoint = localSphereTranslation - closestPointOnBox;
+	float distance = localPoint.Length();
+
+	if (distance < volumeB.GetRadius()) {//yes , we’re colliding!
+		Vector3 collisionNormal = localPoint.Normalised();
+		float penetration = (volumeB.GetRadius() - distance);
+
+		Vector3 localA = Vector3();
+		Vector3 localB = -collisionNormal * volumeB.GetRadius();
+
+		collisionInfo.AddContactPoint(localA, localB, collisionNormal, penetration);
+		return true;
+
+	}
 	return false;
 }

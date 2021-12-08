@@ -443,6 +443,7 @@ void TutorialGame::InitCubeGridWorld(int numRows, int numCols, float rowSpacing,
 void TutorialGame::InitCollisionTest() {
 	float sphereRadius = 1.0f;
 	Vector3 cubeDims = Vector3(3, 4, 3);
+
 	//AddCubeToWorld(Vector3(-5,5,-5), cubeDims, Quaternion(0, 0, 0.2, 1), 0);
 	AddSphereToWorld(Vector3(-5,15,-5), sphereRadius, 1.0f);
 	AddCapsuleToWorld(Vector3(-5, 0, -5), 5.0, 1.0, 0.0f);
@@ -615,7 +616,7 @@ void TutorialGame::MoveSelectedObject() {
 	forceMagnitude += Window::GetMouse()->GetWheelMovement() * 100.0f;
 
 	if (!selectionObject) {
-		return;//we haven’t selected anything! 
+		return;//we havenÂ’t selected anything! 
 	}
 	//Push the selected object!
 	if (Window::GetMouse()->ButtonPressed(NCL::MouseButtons::RIGHT)) {

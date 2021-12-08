@@ -548,3 +548,31 @@ bool CollisionDetection::SphereOBBIntersection(const OBBVolume& volumeA, const T
 	}
 	return false;
 }
+
+bool CollisionDetection::SphereOBBIntersection(const OBBVolume& volumeA, const Transform& worldTransformA,
+	const SphereVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo) {
+	
+	Vector4 localSphereTranslation = worldTransformB.GetPosition() - worldTransformA.GetPosition(); // Finding relative vector.
+	Quaternion inverseOBBQuaternion = worldTransformA.GetOrientation().Conjugate(); // Rotate OBB around its own center
+	localSphereTranslation = inverseOBBQuaternion * localSphereTranslation;	// Rotate Sphere around center of OBB
+
+	Vector3 boxSize = volumeA.GetHalfDimensions();
+
+	Vector3 closestPointOnBox = Maths::Clamp(localSphereTranslation, -boxSize, boxSize);
+
+	Vector3 localPoint = localSphereTranslation - closestPointOnBox;
+	float distance = localPoint.Length();
+
+	if (distance < volumeB.GetRadius()) {//yes , we’re colliding!
+		Vector3 collisionNormal = localPoint.Normalised();
+		float penetration = (volumeB.GetRadius() - distance);
+
+		Vector3 localA = Vector3();
+		Vector3 localB = -collisionNormal * volumeB.GetRadius();
+
+		collisionInfo.AddContactPoint(localA, localB, collisionNormal, penetration);
+		return true;
+
+	}
+	return false;
+}

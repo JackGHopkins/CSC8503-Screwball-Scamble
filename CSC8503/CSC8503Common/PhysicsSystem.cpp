@@ -240,10 +240,8 @@ void PhysicsSystem::ImpulseResolveCollision(GameObject& a, GameObject& b, Collis
 	Vector3 relativeA = p.localA;
 	Vector3 relativeB = p.localB;
 	
-	Vector3 angVelocityA =
-	Vector3::Cross(physA->GetAngularVelocity(), relativeA);
-	Vector3 angVelocityB =
-	Vector3::Cross(physB->GetAngularVelocity(), relativeB);
+	Vector3 angVelocityA = Vector3::Cross(physA->GetAngularVelocity(), relativeA);
+	Vector3 angVelocityB = Vector3::Cross(physB->GetAngularVelocity(), relativeB);
 	
 	Vector3 fullVelocityA = physA->GetLinearVelocity() + angVelocityA;
 	Vector3 fullVelocityB = physB->GetLinearVelocity() + angVelocityB;

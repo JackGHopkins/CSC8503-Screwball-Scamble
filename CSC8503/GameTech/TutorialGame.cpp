@@ -383,6 +383,26 @@ GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimens
 	return cube;
 }
 
+GameObject* TutorialGame::AddCapsuleToWorld(const Vector3& position, float  halfheight, float radius, Quaternion& orientation, float inverseMass) {
+	GameObject* capsule = new GameObject();
+
+	CapsuleVolume* volume = new CapsuleVolume(halfheight, radius);
+	capsule->SetBoundingVolume((CollisionVolume*)volume);
+
+	capsule->GetTransform()
+		.SetPosition(position)
+		.SetOrientation(orientation);
+
+	capsule->SetRenderObject(new RenderObject(&capsule->GetTransform(), capsuleMesh, basicTex, basicShader));
+	capsule->SetPhysicsObject(new PhysicsObject(&capsule->GetTransform(), capsule->GetBoundingVolume()));
+	capsule->GetPhysicsObject()->SetInverseMass(inverseMass);
+	capsule->GetPhysicsObject()->InitCubeInertia();
+
+	world->AddGameObject(capsule);
+
+	return capsule;
+}
+
 void TutorialGame::InitSphereGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing, float radius) {
 	for (int x = 0; x < numCols; ++x) {
 		for (int z = 0; z < numRows; ++z) {
@@ -423,8 +443,10 @@ void TutorialGame::InitCubeGridWorld(int numRows, int numCols, float rowSpacing,
 void TutorialGame::InitCollisionTest() {
 	float sphereRadius = 1.0f;
 	Vector3 cubeDims = Vector3(3, 4, 3);
-	AddCubeToWorld(Vector3(-5,5,-5), cubeDims, Quaternion(0, 0, 0.2, 1), 0);
+
+	//AddCubeToWorld(Vector3(-5,5,-5), cubeDims, Quaternion(0, 0, 0.2, 1), 0);
 	AddSphereToWorld(Vector3(-5,15,-5), sphereRadius, 1.0f);
+	AddCapsuleToWorld(Vector3(-5, 0, -5), 5.0, 1.0, 0.0f);
 }
 
 void TutorialGame::InitDefaultFloor() {
@@ -594,7 +616,7 @@ void TutorialGame::MoveSelectedObject() {
 	forceMagnitude += Window::GetMouse()->GetWheelMovement() * 100.0f;
 
 	if (!selectionObject) {
-		return;//we haven’t selected anything! 
+		return;//we havenÂ’t selected anything! 
 	}
 	//Push the selected object!
 	if (Window::GetMouse()->ButtonPressed(NCL::MouseButtons::RIGHT)) {

@@ -36,6 +36,7 @@ namespace NCL {
 			GameObject* AddFloorToWorld(const Vector3& position);
 			GameObject* AddSphereToWorld(const Vector3& position, float radius, float inverseMass = 10.0f);
 			GameObject* AddCubeToWorld(const Vector3& position, Vector3 dimensions, Quaternion& orientation = Quaternion(0,0,0,0), float inverseMass = 10.0f);
+			GameObject* AddCapsuleToWorld(const Vector3& position, float halfheight, float radius, Quaternion& orientation = Quaternion(0, 0, 0, 0), float inverseMass = 10.0f);
 			
 			GameObject* AddCapsuleToWorld(const Vector3& position, float halfHeight, float radius, float inverseMass = 10.0f);
 

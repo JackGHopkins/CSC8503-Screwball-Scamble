@@ -255,9 +255,9 @@ Matrix4 CollisionDetection::GenerateInverseView(const Camera &c) {
 	Vector3 position = c.GetPosition();
 
 	Matrix4 iview =
-Matrix4::Translation(position) *
-Matrix4::Rotation(yaw, Vector3(0, 1, 0)) *
-Matrix4::Rotation(pitch, Vector3(1, 0, 0));
+	Matrix4::Translation(position) *
+	Matrix4::Rotation(yaw, Vector3(0, 1, 0)) *
+	Matrix4::Rotation(pitch, Vector3(1, 0, 0));
 
 return iview;
 }
@@ -483,6 +483,69 @@ bool CollisionDetection::OBBIntersection(
 bool CollisionDetection::SphereCapsuleIntersection(
 	const CapsuleVolume& volumeA, const Transform& worldTransformA,
 	const SphereVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo) {
+
+	Quaternion capQ = worldTransformA.GetOrientation();
+	Vector3 c_Normal = capQ.ToEuler();
+	c_Normal.Normalise();
+	Vector3 tip = Vector3(sin(c_Normal.x) * volumeA.GetHalfHeight(), cos(c_Normal.y) * volumeA.GetHalfHeight(), sin(c_Normal.z) * volumeA.GetHalfHeight()) + worldTransformA.GetPosition();
+	Vector3 base = -Vector3(sin(c_Normal.x) * volumeA.GetHalfHeight(), cos(c_Normal.y) * volumeA.GetHalfHeight(), sin(c_Normal.z) * volumeA.GetHalfHeight()) + worldTransformA.GetPosition();
+
+	Vector3 baseTip = tip - base;
+	Vector3 tipSphere = worldTransformB.GetPosition() - tip;
+	Vector3 baseSphere = worldTransformB.GetPosition() - base;
+
+	float t;
+
+	float bTmag = sqrt(baseTip.x * baseTip.x + baseTip.y * baseTip.y + baseTip.z * baseTip.z);
+	Vector3 v1norm = Vector3(baseTip.x / bTmag, baseTip.y / bTmag, baseTip.z / bTmag);
+
+	float tSmag = sqrt(tipSphere.x * tipSphere.x + tipSphere.y * tipSphere.y + tipSphere.z * tipSphere.z);
+	Vector3 tSnorm = Vector3(tipSphere.x / tSmag, tipSphere.y / tSmag, tipSphere.z / tSmag);
+
+	float e  = tipBase.Dot(tipBase, tipSphere);
+	if (e <= 0.0f)
+		t= tipSphere.Dot(tipBase, tipBase);
+	
+	float f = tipSphere.Dot(tipSphere, tipSphere);
+	if (e >= f)
+		t = tipSphere.Dot(baseSphere, baseSphere);
+
+	t = tipSphere.Dot(tipBase, tipBase) - e * e / f;
+
+	float radius = volumeA.GetRadius() + volumeB.GetRadius();
+
+	if (t <= radius * radius) {
+		return true;
+	}
+
+	return false;
+}
+
+bool CollisionDetection::SphereOBBIntersection(const OBBVolume& volumeA, const Transform& worldTransformA,
+	const SphereVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo) {
+	
+	Vector4 localSphereTranslation = worldTransformB.GetPosition() - worldTransformA.GetPosition(); // Finding relative vector.
+	Quaternion inverseOBBQuaternion = worldTransformA.GetOrientation().Conjugate(); // Rotate OBB around its own center
+	localSphereTranslation = inverseOBBQuaternion * localSphereTranslation;	// Rotate Sphere around center of OBB
+
+	Vector3 boxSize = volumeA.GetHalfDimensions();
+
+	Vector3 closestPointOnBox = Maths::Clamp(localSphereTranslation, -boxSize, boxSize);
+
+	Vector3 localPoint = localSphereTranslation - closestPointOnBox;
+	float distance = localPoint.Length();
+
+	if (distance < volumeB.GetRadius()) {//yes , we’re colliding!
+		Vector3 collisionNormal = localPoint.Normalised();
+		float penetration = (volumeB.GetRadius() - distance);
+
+		Vector3 localA = Vector3();
+		Vector3 localB = -collisionNormal * volumeB.GetRadius();
+
+		collisionInfo.AddContactPoint(localA, localB, collisionNormal, penetration);
+		return true;
+
+	}
 	return false;
 }
 

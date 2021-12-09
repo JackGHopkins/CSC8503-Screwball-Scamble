@@ -615,7 +615,7 @@ void TutorialGame::MoveSelectedObject() {
 	forceMagnitude += Window::GetMouse()->GetWheelMovement() * 100.0f;
 
 	if (!selectionObject) {
-		return;//we haven’t selected anything! 
+		return;//we havenÂ’t selected anything! 
 	}
 	//Push the selected object!
 	if (Window::GetMouse()->ButtonPressed(NCL::MouseButtons::RIGHT)) {

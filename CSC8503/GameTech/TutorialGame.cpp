@@ -245,10 +245,10 @@ void TutorialGame::InitWorld() {
 	world->ClearAndErase();
 	physics->Clear();
 
-	//InitMixedGridWorld(5, 5, 3.5f, 3.5f);
-	InitCollisionTest();
+	InitMixedGridWorld(5, 5, 3.5f, 3.5f);
+	//InitCollisionTest();
 	//InitGameExamples();
-	//InitDefaultFloor();
+	InitDefaultFloor();
 	//BridgeConstraintTest();
 }
 
@@ -284,6 +284,8 @@ A single function to add a large immoveable cube to the bottom of our world
 */
 GameObject* TutorialGame::AddFloorToWorld(const Vector3& position) {
 	GameObject* floor = new GameObject();
+	std::string name = "floor";
+	floor->SetName(name);
 
 	Vector3 floorSize	= Vector3(100, 2, 100);
 	AABBVolume* volume	= new AABBVolume(floorSize);
@@ -312,6 +314,8 @@ physics worlds. You'll probably need another function for the creation of OBB cu
 */
 GameObject* TutorialGame::AddSphereToWorld(const Vector3& position, float radius, float inverseMass) {
 	GameObject* sphere = new GameObject();
+	std::string name = "sphere";
+	sphere->SetName(name);
 
 	Vector3 sphereSize = Vector3(radius, radius, radius);
 	SphereVolume* volume = new SphereVolume(radius);
@@ -334,6 +338,8 @@ GameObject* TutorialGame::AddSphereToWorld(const Vector3& position, float radius
 
 GameObject* TutorialGame::AddCapsuleToWorld(const Vector3& position, float halfHeight, float radius, float inverseMass) {
 	GameObject* capsule = new GameObject();
+	std::string name = "capsule";
+	capsule->SetName(name);
 
 	CapsuleVolume* volume = new CapsuleVolume(halfHeight, radius);
 	capsule->SetBoundingVolume((CollisionVolume*)volume);
@@ -351,11 +357,35 @@ GameObject* TutorialGame::AddCapsuleToWorld(const Vector3& position, float halfH
 	world->AddGameObject(capsule);
 
 	return capsule;
+}
 
+GameObject* TutorialGame::AddCapsuleToWorld(const Vector3& position, float  halfheight, float radius, Quaternion& orientation, float inverseMass) {
+	GameObject* capsule = new GameObject();
+	std::string name = "capsule";
+	capsule->SetName(name);
+
+	CapsuleVolume* volume = new CapsuleVolume(halfheight, radius);
+	capsule->SetBoundingVolume((CollisionVolume*)volume);
+
+	capsule->GetTransform()
+		.SetScale(Vector3(radius * 2, halfheight, radius * 2))
+		.SetPosition(position)
+		.SetOrientation(orientation);
+
+	capsule->SetRenderObject(new RenderObject(&capsule->GetTransform(), capsuleMesh, basicTex, basicShader));
+	capsule->SetPhysicsObject(new PhysicsObject(&capsule->GetTransform(), capsule->GetBoundingVolume()));
+	capsule->GetPhysicsObject()->SetInverseMass(inverseMass);
+	capsule->GetPhysicsObject()->InitCubeInertia();
+
+	world->AddGameObject(capsule);
+
+	return capsule;
 }
 
 GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimensions, Quaternion& orientation, float inverseMass) {
 	GameObject* cube = new GameObject();
+	std::string name = "cube";
+	cube->SetName(name);
 
 	if (orientation == Quaternion(0, 0, 0, 1)) {
 		AABBVolume* volume = new AABBVolume(dimensions);
@@ -381,26 +411,6 @@ GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimens
 	world->AddGameObject(cube);
 
 	return cube;
-}
-
-GameObject* TutorialGame::AddCapsuleToWorld(const Vector3& position, float  halfheight, float radius, Quaternion& orientation, float inverseMass) {
-	GameObject* capsule = new GameObject();
-
-	CapsuleVolume* volume = new CapsuleVolume(halfheight, radius);
-	capsule->SetBoundingVolume((CollisionVolume*)volume);
-
-	capsule->GetTransform()
-		.SetPosition(position)
-		.SetOrientation(orientation);
-
-	capsule->SetRenderObject(new RenderObject(&capsule->GetTransform(), capsuleMesh, basicTex, basicShader));
-	capsule->SetPhysicsObject(new PhysicsObject(&capsule->GetTransform(), capsule->GetBoundingVolume()));
-	capsule->GetPhysicsObject()->SetInverseMass(inverseMass);
-	capsule->GetPhysicsObject()->InitCubeInertia();
-
-	world->AddGameObject(capsule);
-
-	return capsule;
 }
 
 void TutorialGame::InitSphereGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing, float radius) {

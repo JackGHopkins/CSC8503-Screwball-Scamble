@@ -363,6 +363,15 @@ bool CollisionDetection::ObjectIntersection(GameObject* a, GameObject* b, Collis
 		return SphereOBBIntersection((OBBVolume&)* volB, transformB, (SphereVolume&)* volA, transformA, collisionInfo);
 	}
 
+	if (volA->type == VolumeType::OBB && volB->type == VolumeType::Capsule) {
+		return OBBCapsuleIntersection((OBBVolume&)* volA, transformA, (CapsuleVolume&)* volB, transformB, collisionInfo);
+	}
+	if (volA->type == VolumeType::Capsule && volB->type == VolumeType::OBB) {
+		collisionInfo.a = b;
+		collisionInfo.b = a;
+		return OBBCapsuleIntersection((OBBVolume&)* volB, transformB, (CapsuleVolume&)* volA, transformA, collisionInfo);
+	}
+
 	return false;
 }
 
@@ -457,11 +466,11 @@ bool CollisionDetection::AABBSphereIntersection(const AABBVolume& volumeA, const
 
 	Vector3 closestPointOnBox = Maths::Clamp(delta, -boxSize, boxSize);
 
-	Vector3 localPoint = delta - closestPointOnBox;
-	float distance = localPoint.Length();
+	Vector3 capPoint = delta - closestPointOnBox;
+	float distance = capPoint.Length();
 
 	if (distance < volumeB.GetRadius()) {//yes , we’re colliding!
-		Vector3 collisionNormal = localPoint.Normalised();
+		Vector3 collisionNormal = capPoint.Normalised();
 		float penetration = (volumeB.GetRadius() - distance);
 
 		Vector3 localA = Vector3();
@@ -503,30 +512,30 @@ bool CollisionDetection::SphereCapsuleIntersection(
 	
 	Vector3 dir = (spherePos - tip); //Get the direction between the tip (capsule ray) origin and the sphere origin
 	float sphereProj = Vector3::Dot(dir, tipDir); 	//Then project the sphere’s origin onto our ray direction vector
-	Vector3 localPoint; //Center of Sphere within Capsule
+	Vector3 capPoint; //Center of Sphere within Capsule
 
 	if (sphereProj < 0.0f) {
-		localPoint = tip; // point is behind the ray!
+		capPoint = tip; // point is behind the ray!
 	}
 	Vector3 point = tip + (tipDir * sphereProj); 	//Get closest point on ray line to sphere
 	float maxLength = (point - tip).Length();  	//Find length from point to tip of capsule
 	
 	if ((capHalfHeight * 2) <= maxLength) 
-		localPoint = base; // Point further then end of Capsule
+		capPoint = base; // Point further then end of Capsule
 	else
 		if (sphereProj < 0.0f) 
-			localPoint = tip; // point is behind the ray!
+			capPoint = tip; // point is behind the ray!
 		else
-			localPoint = point;	
+			capPoint = point;	
 
-	float sphereDist = (localPoint - spherePos).Length();
+	float sphereDist = (capPoint - spherePos).Length();
 
 	if (sphereDist > volumeA.GetRadius() + sphereRadius) {
 		return false;
 	}
 
 	float radii = volumeA.GetRadius() + volumeB.GetRadius();
-	Vector3 delta = worldTransformB.GetPosition() - localPoint;
+	Vector3 delta = worldTransformB.GetPosition() - capPoint;
 	float deltaLength = delta.Length();
 
 	float penetration = (radii - deltaLength);
@@ -542,6 +551,67 @@ bool CollisionDetection::SphereOBBIntersection(const OBBVolume& volumeA, const T
 	const SphereVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo) {
 	
 	Vector4 spherePos = worldTransformB.GetPosition() - worldTransformA.GetPosition(); // Finding relative vector.
+	Quaternion inverseOBBQuaternion = worldTransformA.GetOrientation().Conjugate(); // Rotate OBB around its own center
+	spherePos = inverseOBBQuaternion * spherePos;	// Rotate Sphere around center of OBB
+
+	Vector3 boxSize = volumeA.GetHalfDimensions();
+
+	Vector3 closestPointOnBox = Maths::Clamp(spherePos, -boxSize, boxSize);
+
+	Vector3 capPoint = spherePos - closestPointOnBox;
+	float distance = capPoint.Length();
+
+	if (distance < volumeB.GetRadius()) {//yes , we’re colliding!
+		Vector3 collisionNormal = Matrix3(worldTransformA.GetOrientation()) * capPoint.Normalised();
+		float penetration = (volumeB.GetRadius() - distance);
+
+		Vector3 localA = Vector3();
+		Vector3 localB = -collisionNormal * volumeB.GetRadius();
+
+		collisionInfo.AddContactPoint(localA, localB, collisionNormal, penetration);
+		return true;
+	}
+	return false;
+}
+
+bool CollisionDetection::OBBCapsuleIntersection(const OBBVolume& volumeA, const Transform& worldTransformA,
+	const CapsuleVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo) {
+
+	// Square
+	Vector3 sqPos = worldTransformA.GetPosition();
+
+	// Capsule
+	Vector3 capPos = worldTransformB.GetPosition();
+	float capRadius = volumeB.GetRadius();
+	float capHalfHeight = volumeB.GetHalfHeight() - capRadius;
+	Quaternion capQ = worldTransformB.GetOrientation();
+	Vector3 c_Normal = capQ.ToEuler();
+	c_Normal.Normalise();
+	Vector3 tip = Vector3(sin(c_Normal.x) * capHalfHeight, cos(c_Normal.y) * capHalfHeight, sin(c_Normal.z) * capHalfHeight) + worldTransformB.GetPosition();
+	Vector3 base = -Vector3(sin(c_Normal.x) * capHalfHeight, cos(c_Normal.y) * capHalfHeight, sin(c_Normal.z) * capHalfHeight) + worldTransformB.GetPosition();
+
+	Vector3 tipDir = (base - tip);
+	tipDir.Normalise();
+
+	Vector3 dir = (sqPos - tip); //Get the direction between the tip (capsule ray) origin and the sphere origin
+	float sphereProj = Vector3::Dot(dir, tipDir); 	//Then project the sphere’s origin onto our ray direction vector
+	Vector3 capPoint; //Center of Sphere within Capsule
+
+	if (sphereProj < 0.0f) {
+		capPoint = tip; // point is behind the ray!
+	}
+	Vector3 point = tip + (tipDir * sphereProj); 	//Get closest point on ray line to sphere
+	float maxLength = (point - tip).Length();  	//Find length from point to tip of capsule
+
+	if ((capHalfHeight * 2) <= maxLength)
+		capPoint = base; // Point further then end of Capsule
+	else
+		if (sphereProj < 0.0f)
+			capPoint = tip; // point is behind the ray!
+		else
+			capPoint = point;
+
+	Vector4 spherePos = capPoint - worldTransformA.GetPosition(); // Finding relative vector.
 	Quaternion inverseOBBQuaternion = worldTransformA.GetOrientation().Conjugate(); // Rotate OBB around its own center
 	spherePos = inverseOBBQuaternion * spherePos;	// Rotate Sphere around center of OBB
 

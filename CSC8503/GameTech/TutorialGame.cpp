@@ -452,11 +452,11 @@ void TutorialGame::InitCubeGridWorld(int numRows, int numCols, float rowSpacing,
 
 void TutorialGame::InitCollisionTest() {
 	float sphereRadius = 1.0f;
-	Vector3 cubeDims = Vector3(1, 1, 1);
-	//AddCubeToWorld(Vector3(-5,5,-5), cubeDims, Quaternion(0, 0.5, 0, 1), 0);
-	AddCapsuleToWorld(Vector3(-5, 0, -5), 5.0, 1.0, Quaternion(0, 0, 0.5, 1), 0.0f);
+	Vector3 cubeDims = Vector3(50, 1, 50);
+	AddCubeToWorld(Vector3(-5,5,-5), cubeDims, Quaternion(0, 0, 0.5, 1), 0);
+	AddCapsuleToWorld(Vector3(-5, 20, -5), 5.0, 1.0, Quaternion(1, 0, 0, 1), 1.0f);
 	
-	AddSphereToWorld(Vector3(-5,15,-5), sphereRadius, 1.0f);
+	//AddSphereToWorld(Vector3(-5,15,-5), sphereRadius, 1.0f);
 }
 
 void TutorialGame::InitDefaultFloor() {

@@ -245,10 +245,10 @@ void TutorialGame::InitWorld() {
 	world->ClearAndErase();
 	physics->Clear();
 
-	InitMixedGridWorld(5, 5, 3.5f, 3.5f);
-	//InitCollisionTest();
+	//InitMixedGridWorld(5, 5, 3.5f, 3.5f);
+	InitCollisionTest();
 	//InitGameExamples();
-	InitDefaultFloor();
+	//InitDefaultFloor();
 	//BridgeConstraintTest();
 }
 
@@ -453,9 +453,9 @@ void TutorialGame::InitCubeGridWorld(int numRows, int numCols, float rowSpacing,
 void TutorialGame::InitCollisionTest() {
 	float sphereRadius = 1.0f;
 	Vector3 cubeDims = Vector3(1, 1, 1);
-	//AddCubeToWorld(Vector3(-5,5,-5), cubeDims, Quaternion(0, 0, 0, 1), 1.0f);
+	AddCubeToWorld(Vector3(-5,5,-5), cubeDims, Quaternion(0, 0.5, 0, 1), 0);
 	AddSphereToWorld(Vector3(-5,15,-5), sphereRadius, 1.0f);
-	AddCapsuleToWorld(Vector3(-5, 0, -5), 5.0, 1.0, 0.0f);
+	//AddCapsuleToWorld(Vector3(-5, 0, -5), 5.0, 1.0, 0.0f);
 }
 
 void TutorialGame::InitDefaultFloor() {

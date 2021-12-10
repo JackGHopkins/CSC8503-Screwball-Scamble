@@ -534,19 +534,19 @@ bool CollisionDetection::SphereCapsuleIntersection(
 bool CollisionDetection::SphereOBBIntersection(const OBBVolume& volumeA, const Transform& worldTransformA,
 	const SphereVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo) {
 	
-	Vector4 localSphereTranslation = worldTransformB.GetPosition() - worldTransformA.GetPosition(); // Finding relative vector.
+	Vector4 spherePos = worldTransformB.GetPosition() - worldTransformA.GetPosition(); // Finding relative vector.
 	Quaternion inverseOBBQuaternion = worldTransformA.GetOrientation().Conjugate(); // Rotate OBB around its own center
-	localSphereTranslation = inverseOBBQuaternion * localSphereTranslation;	// Rotate Sphere around center of OBB
+	spherePos = inverseOBBQuaternion * spherePos;	// Rotate Sphere around center of OBB
 
 	Vector3 boxSize = volumeA.GetHalfDimensions();
 
-	Vector3 closestPointOnBox = Maths::Clamp(localSphereTranslation, -boxSize, boxSize);
+	Vector3 closestPointOnBox = Maths::Clamp(spherePos, -boxSize, boxSize);
 
-	Vector3 localPoint = localSphereTranslation - closestPointOnBox;
+	Vector3 localPoint = spherePos - closestPointOnBox;
 	float distance = localPoint.Length();
 
 	if (distance < volumeB.GetRadius()) {//yes , we’re colliding!
-		Vector3 collisionNormal = localPoint.Normalised();
+		Vector3 collisionNormal = Matrix3(worldTransformA.GetOrientation()) * localPoint.Normalised();
 		float penetration = (volumeB.GetRadius() - distance);
 
 		Vector3 localA = Vector3();

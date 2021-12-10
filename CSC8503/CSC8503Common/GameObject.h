@@ -53,7 +53,7 @@ namespace NCL {
 				return name;
 			}
 			
-			const string& SetName(string& str) {
+			void SetName(string& str) {
 				this->name = str;
 			}
 

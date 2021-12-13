@@ -11,7 +11,6 @@ namespace NCL {
 				objectA = a;
 				objectB = b;
 				distance = d;
-
 			}
 			~PositionConstraint() {}
 

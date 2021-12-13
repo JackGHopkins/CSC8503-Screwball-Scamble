@@ -10,6 +10,7 @@ GameObject::GameObject(string objectName)	{
 	boundingVolume	= nullptr;
 	physicsObject	= nullptr;
 	renderObject	= nullptr;
+	gOType			= GameObjectType::_NULL;
 }
 
 GameObject::~GameObject()	{

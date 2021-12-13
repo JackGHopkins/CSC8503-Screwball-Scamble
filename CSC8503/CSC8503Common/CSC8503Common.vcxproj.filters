@@ -25,6 +25,9 @@
     <Filter Include="Pathfinding">
       <UniqueIdentifier>{84f869c2-c73b-4eb0-ace4-ff4d685ef4ee}</UniqueIdentifier>
     </Filter>
+    <Filter Include="StateMachine">
+      <UniqueIdentifier>{9b6a82ea-f7be-4bf7-af2a-4b21d1580fcc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameWorld.h">
@@ -47,15 +50,6 @@
     </ClInclude>
     <ClInclude Include="Ray.h">
       <Filter>CollisionDetection</Filter>
-    </ClInclude>
-    <ClInclude Include="StateMachine.h">
-      <Filter>AI</Filter>
-    </ClInclude>
-    <ClInclude Include="StateTransition.h">
-      <Filter>AI</Filter>
-    </ClInclude>
-    <ClInclude Include="State.h">
-      <Filter>AI</Filter>
     </ClInclude>
     <ClInclude Include="PushdownState.h">
       <Filter>AI</Filter>
@@ -102,6 +96,36 @@
     <ClInclude Include="PhysicsSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="BehaviourNode.h">
+      <Filter>AI</Filter>
+    </ClInclude>
+    <ClInclude Include="BehaviourNodeWithChildren.h">
+      <Filter>AI</Filter>
+    </ClInclude>
+    <ClInclude Include="BehaviourSelector.h">
+      <Filter>AI</Filter>
+    </ClInclude>
+    <ClInclude Include="BehaviourSequence.h">
+      <Filter>AI</Filter>
+    </ClInclude>
+    <ClInclude Include="BehaviourAction.h">
+      <Filter>AI</Filter>
+    </ClInclude>
+    <ClInclude Include="StateTransition.h">
+      <Filter>StateMachine</Filter>
+    </ClInclude>
+    <ClInclude Include="State.h">
+      <Filter>StateMachine</Filter>
+    </ClInclude>
+    <ClInclude Include="StateGameObject.h">
+      <Filter>StateMachine</Filter>
+    </ClInclude>
+    <ClInclude Include="StateMachine.h">
+      <Filter>StateMachine</Filter>
+    </ClInclude>
+    <ClInclude Include="PushBlockStateMachine.h">
+      <Filter>StateMachine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameWorld.cpp">
@@ -121,12 +145,6 @@
     </ClCompile>
     <ClCompile Include="RenderObject.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="StateMachine.cpp">
-      <Filter>AI</Filter>
-    </ClCompile>
-    <ClCompile Include="StateTransition.cpp">
-      <Filter>AI</Filter>
     </ClCompile>
     <ClCompile Include="PushdownState.cpp">
       <Filter>AI</Filter>
@@ -154,6 +172,18 @@
     </ClCompile>
     <ClCompile Include="PositionConstraint.cpp">
       <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="StateGameObject.cpp">
+      <Filter>StateMachine</Filter>
+    </ClCompile>
+    <ClCompile Include="StateMachine.cpp">
+      <Filter>StateMachine</Filter>
+    </ClCompile>
+    <ClCompile Include="StateTransition.cpp">
+      <Filter>StateMachine</Filter>
+    </ClCompile>
+    <ClCompile Include="PushBlockStateMachine.cpp">
+      <Filter>StateMachine</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

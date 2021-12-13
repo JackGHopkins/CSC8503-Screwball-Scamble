@@ -1,6 +1,8 @@
 #pragma once
 #include <vector>
 #include <map>
+#include <iostream>
+#include <iterator>
 
 namespace NCL {
 	namespace CSC8503 {
@@ -19,7 +21,7 @@ namespace NCL {
 			void AddState(State* s);
 			void AddTransition(StateTransition* t);
 
-			void Update();
+			void Update(float dt);
 
 		protected:
 			State * activeState;

@@ -104,6 +104,10 @@ void TutorialGame::UpdateGame(float dt) {
 		//Debug::DrawAxisLines(lockedObject->GetTransform().GetMatrix(), 2.0f);
 	}
 
+	if (testStateObject) {
+		testStateObject->Update(dt);
+	}
+
 	world->UpdateWorld(dt);
 	renderer->Update(dt);
 
@@ -246,10 +250,17 @@ void TutorialGame::InitWorld() {
 	physics->Clear();
 
 	//InitMixedGridWorld(5, 5, 3.5f, 3.5f);
-	InitCollisionTest();
 	//InitGameExamples();
-	//InitDefaultFloor();
+	InitDefaultFloor();
 	//BridgeConstraintTest();
+	testStateObject = AddStateObjectToWorld(Vector3(0, 10, 0));
+	//InitGamemode1();
+	//InitCollisionTest();
+}
+
+void TutorialGame::InitGamemode1(){
+
+
 }
 
 void TutorialGame::BridgeConstraintTest() {
@@ -413,6 +424,39 @@ GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimens
 	return cube;
 }
 
+GameObject* TutorialGame::AddSpringBlockToWorld(const Vector3& position, Vector3 dimensions, Quaternion& orientation, float inverseMass) {
+	GameObject* cube = new GameObject();
+	std::string name = "cube";
+	cube->SetName(name);
+
+	if (orientation == Quaternion(0, 0, 0, 1)) {
+		AABBVolume* volume = new AABBVolume(dimensions);
+		cube->SetBoundingVolume((CollisionVolume*)volume);
+	}
+	else {
+		OBBVolume* volume = new OBBVolume(dimensions);
+		cube->SetBoundingVolume((CollisionVolume*)volume);
+	}
+
+
+	cube->GetTransform()
+		.SetPosition(position)
+		.SetScale(dimensions * 2)
+		.SetOrientation(orientation);
+
+	cube->SetRenderObject(new RenderObject(&cube->GetTransform(), cubeMesh, basicTex, basicShader));
+	cube->SetPhysicsObject(new PhysicsObject(&cube->GetTransform(), cube->GetBoundingVolume()));
+
+	cube->GetPhysicsObject()->SetInverseMass(inverseMass);
+	cube->GetPhysicsObject()->InitCubeInertia();
+
+	cube->gOType = GameObjectType::_SPRING;
+
+	world->AddGameObject(cube);
+
+	return cube;
+}
+
 void TutorialGame::InitSphereGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing, float radius) {
 	for (int x = 0; x < numCols; ++x) {
 		for (int z = 0; z < numRows; ++z) {
@@ -452,11 +496,11 @@ void TutorialGame::InitCubeGridWorld(int numRows, int numCols, float rowSpacing,
 
 void TutorialGame::InitCollisionTest() {
 	float sphereRadius = 1.0f;
-	Vector3 cubeDims = Vector3(50, 1, 50);
-	AddCubeToWorld(Vector3(-5,5,-5), cubeDims, Quaternion(0, 0, 0.5, 1), 0);
-	AddCapsuleToWorld(Vector3(-5, 20, -5), 5.0, 1.0, Quaternion(1, 0, 0, 1), 1.0f);
-	
-	//AddSphereToWorld(Vector3(-5,15,-5), sphereRadius, 1.0f);
+	Vector3 cubeDims = Vector3(1, 1, 1);
+	//AddCubeToWorld(Vector3(-5,5,-5), cubeDims, Quaternion(0, 0, 0.5, 1), 0);
+	//AddCapsuleToWorld(Vector3(-5, 20, -5), 5.0, 1.0, Quaternion(1, 0, 0, 1), 1.0f);
+	AddSpringBlockToWorld(Vector3(-20, 5, -20), cubeDims, Quaternion(0, 0, 0, 1), 1.0f);
+	AddSphereToWorld(Vector3(-20,5,-20), sphereRadius, 1.0f);
 }
 
 void TutorialGame::InitDefaultFloor() {
@@ -545,6 +589,26 @@ GameObject* TutorialGame::AddBonusToWorld(const Vector3& position) {
 	return apple;
 }
 
+StateGameObject* TutorialGame::AddStateObjectToWorld(const Vector3& position) {
+	StateGameObject* apple = new StateGameObject();
+
+	SphereVolume* volume = new SphereVolume(0.25f);
+	apple->SetBoundingVolume((CollisionVolume*)volume);
+	apple->GetTransform()
+		.SetScale(Vector3(0.25, 0.25, 0.25))
+		.SetPosition(position);
+
+	apple->SetRenderObject(new RenderObject(&apple->GetTransform(), bonusMesh, nullptr, basicShader));
+	apple->SetPhysicsObject(new PhysicsObject(&apple->GetTransform(), apple->GetBoundingVolume()));
+
+	apple->GetPhysicsObject()->SetInverseMass(1.0f);
+	apple->GetPhysicsObject()->InitSphereInertia();
+
+	world->AddGameObject(apple);
+
+	return apple;
+}
+
 /*
 
 Every frame, this code will let you perform a raycast, to see if there's an object
@@ -574,6 +638,9 @@ bool TutorialGame::SelectObject() {
 				selectionObject = nullptr;
 				lockedObject	= nullptr;
 			}
+
+			if(selectionObject->gOType == GameObjectType::_SPRING){}
+
 
 			Ray ray = CollisionDetection::BuildRayFromMouse(*world->GetMainCamera());
 

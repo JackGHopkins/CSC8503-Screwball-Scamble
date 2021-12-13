@@ -3,20 +3,17 @@
 
 namespace NCL {
 	namespace CSC8503 {
-		class PushdownState :
-			public State
-		{
+		class PushdownState {
 		public:
 			enum PushdownResult {
 				Push, Pop, NoChange
 			};
-			PushdownState();
-			~PushdownState();
+			PushdownState() {}
+			virtual ~PushdownState() {}
 
-			PushdownResult PushdownUpdate(PushdownState** pushResult);
-
-			virtual void OnAwake() {} //By default do nothing
-			virtual void OnSleep() {} //By default do nothing
+			virtual PushdownResult OnUpdate(float dt, PushdownState** pushFunc) = 0;
+			virtual void OnAwake() {}
+			virtual void OnSleep() {}
 		};
 	}
 }

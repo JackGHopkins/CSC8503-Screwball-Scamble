@@ -73,7 +73,7 @@ void TutorialGame::UpdateGame(float dt) {
 		world->GetMainCamera()->UpdateCamera(dt);
 	}
 
-	UpdateKeys();
+	UpdateKeys(dt);
 
 	if (useGravity) {
 		Debug::Print("(G)ravity on", Vector2(5, 95));
@@ -104,18 +104,23 @@ void TutorialGame::UpdateGame(float dt) {
 		//Debug::DrawAxisLines(lockedObject->GetTransform().GetMatrix(), 2.0f);
 	}
 
-	if (testStateObject) {
+	if (testStateObject)
 		testStateObject->Update(dt);
+
+	for (auto i : vSprings) {
+		if (i)
+			i->Update(dt);
 	}
 
 	world->UpdateWorld(dt);
 	renderer->Update(dt);
 
+
 	Debug::FlushRenderables(dt);
 	renderer->Render();
 }
 
-void TutorialGame::UpdateKeys() {
+void TutorialGame::UpdateKeys(float dt) {
 	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F1)) {
 		InitWorld(); //We can reset the simulation at any time with F1
 		selectionObject = nullptr;
@@ -153,6 +158,15 @@ void TutorialGame::UpdateKeys() {
 	}
 	else {
 		DebugObjectMovement();
+	}
+
+	if (Window::GetKeyboard()->KeyPressed(NCL::KeyboardKeys::M)) {
+		for (auto i : vSprings) {
+			if (i) {
+				i->springFired = true;
+				i->Update(dt);
+			}
+		}
 	}
 }
 
@@ -251,42 +265,101 @@ void TutorialGame::InitWorld() {
 
 	//InitMixedGridWorld(5, 5, 3.5f, 3.5f);
 	//InitGameExamples();
-	InitDefaultFloor();
+	//InitDefaultFloor();
 	//BridgeConstraintTest();
-	testStateObject = AddStateObjectToWorld(Vector3(0, 10, 0));
-	//InitGamemode1();
+	//testStateObject = AddStateObjectToWorld(Vector3(0, 10, 0));
+	InitGamemode1();
 	//InitCollisionTest();
 }
 
+void TutorialGame::InitCollisionTest() {
+	float sphereRadius = 1.0f;
+	Vector3 cubeDims = Vector3(1, 1, 1);
+	//AddCubeToWorld(Vector3(-5,5,-5), cubeDims, Quaternion(0, 0, 0.5, 1), 0);
+	//AddCapsuleToWorld(Vector3(-5, 20, -5), 5.0, 1.0, Quaternion(1, 0, 0, 1), 1.0f);
+	AddCubeToWorld(Vector3(0, 10, -20), Vector3(5,0.2,1), Quaternion(0, 0, 0, 1), 1.0f);
+	AddCubeToWorld(Vector3(20, 10, -20), Vector3(5,0.2,1), Quaternion(0, 0, 0, 1), 1.0f);
+	AddCubeToWorld(Vector3(10, 5, -20), Vector3(5,0.2,1), Quaternion(0, 0, 0, 1), 1.0f);
+	vSprings.emplace_back(AddSpringBlockToWorld(Vector3(-20, 5, -20), cubeDims, Quaternion(0, 0, 0, 1), 1.0f));
+	AddSphereToWorld(Vector3(-15,5,-20), sphereRadius, 1.0f);
+	AddSphereToWorld(Vector3(-0,5,-20), sphereRadius, 1.0f);
+	AddSphereToWorld(Vector3(-10,5,-20), sphereRadius, 1.0f);
+	//AddSphereToWorld(Vector3(-20,5,-20), sphereRadius, 1.0f);
+	AddSphereToWorld(Vector3(-25,5,-20), sphereRadius, 1.0f);
+}
+
 void TutorialGame::InitGamemode1(){
+	float magNum = 2.0f;
 
+	// Ball
+	AddSphereToWorld(Vector3(16, 2, 16), 0.5f, 1.0f);
+
+	// Reset Collider
+	AddCubeToWorld(Vector3(0, 0, 0), Vector3(20, -5, 20), Quaternion(0, 0, 0, 1), 0, GameObjectType::_RESET);
+	
+	// Base Floor
+	AddCubeToWorld(Vector3(0, 0, 16), Vector3(5, 1, 2), Quaternion(0, 0, 0, 1), 0, GameObjectType::_FLOOR);
+
+	// 1st Floor
+	AddCubeToWorld(Vector3(-15, 2, 13), Vector3(5, 1, 5), Quaternion(0, 0, 0, 1), 0, GameObjectType::_FLOOR);
+	AddCubeToWorld(Vector3(0, 1, 9), Vector3(11, 1, 1), Quaternion(0, 0, 0, 1), 0, GameObjectType::_FLOOR);
+	AddCubeToWorld(Vector3(14, 1, 9), Vector3(4, 1, 3), Quaternion(0, 0, 0, 1), 0, GameObjectType::_FLOOR);
+	AddCubeToWorld(Vector3(13.5, 3, -16), Vector3(4.5, 1, 2), Quaternion(0, 0, 0, 1), 0, GameObjectType::_FLOOR);
+
+
+	// Walls
+	AddCubeToWorld(Vector3(0, 2, 19), Vector3(20, 4, 1), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
+	AddCubeToWorld(Vector3(3, 2, 13), Vector3(17, 4, 1), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
+	AddCubeToWorld(Vector3(-18, 4, 17.36), Vector3(2, 2, 1), Quaternion(0, -0.414, 0, 1), 0, GameObjectType::_WALL);// Tilted Corner
+
+	AddCubeToWorld(Vector3(19, 2, -3), Vector3(1, 4, 15), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
+	AddCubeToWorld(Vector3(-19, 2, 15), Vector3(1, 4, 3), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
+	AddCubeToWorld(Vector3(12, 2, -19), Vector3(8, 4, 1), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
+
+	AddCubeToWorld(Vector3(-11.3334, 4, 11.9), Vector3(2, 2, 1), Quaternion(0, 0.268, 0, 1), 0, GameObjectType::_WALL); // Tilted Corner
+	AddCubeToWorld(Vector3(-7, 2, 11), Vector3(3, 4, 1), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
+	AddCubeToWorld(Vector3(8, 2, 11), Vector3(4, 4, 1), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
+
+	AddCubeToWorld(Vector3(6.5, 2, -5), Vector3(2.5, 4, 13), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
+	AddCubeToWorld(Vector3(11, 2, 6), Vector3(2, 4, 2), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
+	AddCubeToWorld(Vector3(-12, 2, 7), Vector3(8, 4, 1), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
+
+	// Springs
+	vSprings.emplace_back(AddSpringBlockToWorld(Vector3(19, 2, 16), Vector3(1,1,2), Quaternion(0, 0, 0, 1), 1.0f, Vector3(-250, 0, 0) ,3.0f));
+	vSprings.emplace_back(AddSpringBlockToWorld(Vector3(-19, 4, 10), Vector3(1,1,2), Quaternion(0, 0, 0, 1), 1.0f, Vector3(300, 0, 0), 2.5f));
+	vSprings.emplace_back(AddSpringBlockToWorld(Vector3(15, 4, 11), Vector3(3,1,1), Quaternion(0, 0, 0, 1), 1.0f, Vector3(0, 0, -300), 1.0f));
+
+	// Ramps
+	AddCubeToWorld(Vector3(0, 1, 16), Vector3(11, 1, 2), Quaternion(0, 0, -0.047, 1), 0, GameObjectType::_RAMP);
+	AddCubeToWorld(Vector3(0, 5.34, 2), Vector3(4, 1, 6.5), Quaternion(0.315, 0, 0, 1), 0, GameObjectType::_RAMP);
+	AddCubeToWorld(Vector3(13.5, 2.5, 0), Vector3(4.5, 1, 6.5), Quaternion(0.12, 0, 0, 1), 0, GameObjectType::_RAMP);
 
 }
 
-void TutorialGame::BridgeConstraintTest() {
-	Vector3 cubeSize = Vector3(8, 8, 8);
-	
-	float invCubeMass = 5; //how heavy the middle pieces are
-	int numLinks = 10;
-	float maxDistance = 30; // constraint distance
-	float cubeDistance = 20; // distance between links
-	
-	Vector3 startPos = Vector3(500, 500, 500);
-	
-	 GameObject * start = AddCubeToWorld(startPos + Vector3(0, 0, 0), cubeSize, Quaternion(0, 0, 0, 0), 0);
-	 GameObject * end = AddCubeToWorld(startPos + Vector3((numLinks + 2)* cubeDistance, 0, 0), cubeSize, Quaternion(0, 0, 0, 0), 0);
-	
-	 GameObject * previous = start;
-	
-	 for (int i = 0; i < numLinks; ++i) {
-	 GameObject * block = AddCubeToWorld(startPos + Vector3((i + 1) *cubeDistance, 0, 0), cubeSize, Quaternion(0, 0, 0, 0), invCubeMass);
-	 PositionConstraint * constraint = new PositionConstraint(previous,block, maxDistance);
-	 world->AddConstraint(constraint);
-	 previous = block;
-	}
-	PositionConstraint * constraint = new PositionConstraint(previous,end, maxDistance);
-	world->AddConstraint(constraint);
-}
+//void TutorialGame::BridgeConstraintTest() {
+//	Vector3 cubeSize = Vector3(8, 8, 8);
+//	
+//	float invCubeMass = 5; //how heavy the middle pieces are
+//	int numLinks = 10;
+//	float maxDistance = 30; // constraint distance
+//	float cubeDistance = 20; // distance between links
+//	
+//	Vector3 startPos = Vector3(500, 500, 500);
+//	
+//	 GameObject * start = AddCubeToWorld(startPos + Vector3(0, 0, 0), cubeSize, Quaternion(0, 0, 0, 0), 0);
+//	 GameObject * end = AddCubeToWorld(startPos + Vector3((numLinks + 2)* cubeDistance, 0, 0), cubeSize, Quaternion(0, 0, 0, 0), 0);
+//	
+//	 GameObject * previous = start;
+//	
+//	 for (int i = 0; i < numLinks; ++i) {
+//	 GameObject * block = AddCubeToWorld(startPos + Vector3((i + 1) *cubeDistance, 0, 0), cubeSize, Quaternion(0, 0, 0, 0), invCubeMass);
+//	 PositionConstraint * constraint = new PositionConstraint(previous,block, maxDistance);
+//	 world->AddConstraint(constraint);
+//	 previous = block;
+//	}
+//	PositionConstraint * constraint = new PositionConstraint(previous,end, maxDistance);
+//	world->AddConstraint(constraint);
+//}
 
 /*
 
@@ -370,7 +443,7 @@ GameObject* TutorialGame::AddCapsuleToWorld(const Vector3& position, float halfH
 	return capsule;
 }
 
-GameObject* TutorialGame::AddCapsuleToWorld(const Vector3& position, float  halfheight, float radius, Quaternion& orientation, float inverseMass) {
+GameObject* TutorialGame::AddCapsuleToWorld(const Vector3& position, float  halfheight, float radius, Quaternion& orientation, float inverseMass, GameObjectType type) {
 	GameObject* capsule = new GameObject();
 	std::string name = "capsule";
 	capsule->SetName(name);
@@ -393,7 +466,7 @@ GameObject* TutorialGame::AddCapsuleToWorld(const Vector3& position, float  half
 	return capsule;
 }
 
-GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimensions, Quaternion& orientation, float inverseMass) {
+GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimensions, Quaternion& orientation, float inverseMass, GameObjectType type) {
 	GameObject* cube = new GameObject();
 	std::string name = "cube";
 	cube->SetName(name);
@@ -407,13 +480,15 @@ GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimens
 		cube->SetBoundingVolume((CollisionVolume*)volume);
 	}
 
-
 	cube->GetTransform()
 		.SetPosition(position)
 		.SetScale(dimensions * 2)
 		.SetOrientation(orientation);
 
+	cube->gOType = type;
+
 	cube->SetRenderObject(new RenderObject(&cube->GetTransform(), cubeMesh, basicTex, basicShader));
+	cube->SetColour();
 	cube->SetPhysicsObject(new PhysicsObject(&cube->GetTransform(), cube->GetBoundingVolume()));
 
 	cube->GetPhysicsObject()->SetInverseMass(inverseMass);
@@ -424,37 +499,37 @@ GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimens
 	return cube;
 }
 
-GameObject* TutorialGame::AddSpringBlockToWorld(const Vector3& position, Vector3 dimensions, Quaternion& orientation, float inverseMass) {
-	GameObject* cube = new GameObject();
-	std::string name = "cube";
-	cube->SetName(name);
+SMPushBlock* TutorialGame::AddSpringBlockToWorld(const Vector3& position, Vector3 dimensions, Quaternion& orientation, float inverseMass, Vector3 force, float distance) {
+	SMPushBlock *spring = new SMPushBlock(position, force, distance);
+	std::string name = "spring";
+	spring->SetName(name);
 
 	if (orientation == Quaternion(0, 0, 0, 1)) {
 		AABBVolume* volume = new AABBVolume(dimensions);
-		cube->SetBoundingVolume((CollisionVolume*)volume);
+		spring->SetBoundingVolume((CollisionVolume*)volume);
 	}
 	else {
 		OBBVolume* volume = new OBBVolume(dimensions);
-		cube->SetBoundingVolume((CollisionVolume*)volume);
+		spring->SetBoundingVolume((CollisionVolume*)volume);
 	}
 
-
-	cube->GetTransform()
+	spring->GetTransform()
 		.SetPosition(position)
 		.SetScale(dimensions * 2)
 		.SetOrientation(orientation);
 
-	cube->SetRenderObject(new RenderObject(&cube->GetTransform(), cubeMesh, basicTex, basicShader));
-	cube->SetPhysicsObject(new PhysicsObject(&cube->GetTransform(), cube->GetBoundingVolume()));
+	spring->SetRenderObject(new RenderObject(&spring->GetTransform(), cubeMesh, basicTex, basicShader));
+	spring->SetPhysicsObject(new PhysicsObject(&spring->GetTransform(), spring->GetBoundingVolume()));
 
-	cube->GetPhysicsObject()->SetInverseMass(inverseMass);
-	cube->GetPhysicsObject()->InitCubeInertia();
+	spring->GetPhysicsObject()->SetInverseMass(inverseMass);
+	spring->GetPhysicsObject()->InitCubeInertia();
 
-	cube->gOType = GameObjectType::_SPRING;
+	spring->gOType = GameObjectType::_SPRING;
+	spring->SetColour();
 
-	world->AddGameObject(cube);
+	world->AddGameObject(spring);
 
-	return cube;
+	return spring;
 }
 
 void TutorialGame::InitSphereGridWorld(int numRows, int numCols, float rowSpacing, float colSpacing, float radius) {
@@ -494,14 +569,6 @@ void TutorialGame::InitCubeGridWorld(int numRows, int numCols, float rowSpacing,
 	}
 }
 
-void TutorialGame::InitCollisionTest() {
-	float sphereRadius = 1.0f;
-	Vector3 cubeDims = Vector3(1, 1, 1);
-	//AddCubeToWorld(Vector3(-5,5,-5), cubeDims, Quaternion(0, 0, 0.5, 1), 0);
-	//AddCapsuleToWorld(Vector3(-5, 20, -5), 5.0, 1.0, Quaternion(1, 0, 0, 1), 1.0f);
-	AddSpringBlockToWorld(Vector3(-20, 5, -20), cubeDims, Quaternion(0, 0, 0, 1), 1.0f);
-	AddSphereToWorld(Vector3(-20,5,-20), sphereRadius, 1.0f);
-}
 
 void TutorialGame::InitDefaultFloor() {
 	AddFloorToWorld(Vector3(0, -2, 0));
@@ -635,12 +702,10 @@ bool TutorialGame::SelectObject() {
 		if (Window::GetMouse()->ButtonDown(NCL::MouseButtons::LEFT)) {
 			if (selectionObject) {	//set colour to deselected;
 				selectionObject->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
+
 				selectionObject = nullptr;
-				lockedObject	= nullptr;
+				lockedObject = nullptr;
 			}
-
-			if(selectionObject->gOType == GameObjectType::_SPRING){}
-
 
 			Ray ray = CollisionDetection::BuildRayFromMouse(*world->GetMainCamera());
 
@@ -699,10 +764,16 @@ void TutorialGame::MoveSelectedObject() {
 	if (Window::GetMouse()->ButtonPressed(NCL::MouseButtons::RIGHT)) {
 		Ray ray = CollisionDetection::BuildRayFromMouse(*world->GetMainCamera());
 		RayCollision closestCollision;
-		if (world->Raycast(ray, closestCollision, true)) {
-			if (closestCollision.node == selectionObject) {
-				selectionObject->GetPhysicsObject()->AddForceAtPosition(ray.GetDirection() * forceMagnitude, closestCollision.collidedAt);
-			}
-		}
+
+		//if (world->Raycast(ray, closestCollision, true)) {
+		//	if (closestCollision.node == selectionObject) {
+		//		selectionObject->GetPhysicsObject()->AddForceAtPosition(ray.GetDirection() * forceMagnitude, closestCollision.collidedAt);
+		//	}
+		//}
+	}
+
+	if (Window::GetKeyboard()->KeyPressed(NCL::KeyboardKeys::SPACE)) {
+		if (selectionObject->gOType == GameObjectType::_SPRING)
+			selectionObject->springFired = true;
 	}
 }

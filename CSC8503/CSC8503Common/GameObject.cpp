@@ -45,3 +45,29 @@ void GameObject::UpdateBroadphaseAABB() {
 		broadphaseAABB = mat * halfSizes;
 	}
 }
+
+void GameObject::SetColour() {
+	switch (gOType)
+	{
+	case GameObjectType::_FLOOR:
+		this->GetRenderObject()->SetColour(Vector4(1, 0, 0, 1));
+		break;
+	case GameObjectType::_RAMP:
+		this->GetRenderObject()->SetColour(Vector4(0.5, 0, 0, 1));
+		break;
+	case GameObjectType::_RESET:
+		this->GetRenderObject()->SetColour(Vector4(0, 0, 0, 1));
+		break;
+	case GameObjectType::_SLIME:
+		this->GetRenderObject()->SetColour(Vector4(0, 1, 0, 1));
+		break;
+	case GameObjectType::_SPRING:
+		this->GetRenderObject()->SetColour(Vector4(1, 0, 1, 1));
+		break;
+	case GameObjectType::_WALL:
+		this->GetRenderObject()->SetColour(Vector4(0, 0, 1, 1));
+		break;
+	default:
+		break;
+	}
+}

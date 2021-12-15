@@ -11,9 +11,15 @@ using std::vector;
 
 namespace NCL {
 	namespace CSC8503 {
-		enum GameObjectType
+		enum class GameObjectType
 		{
-			_NULL, _SPRING, _ICE
+			_NULL = 0,
+			_SPRING = 1,
+			_SLIME = 2,
+			_RESET = 3,
+			_RAMP = 4,
+			_FLOOR = 5,
+			_WALL = 6
 		};
 
 		class GameObject	{
@@ -80,6 +86,8 @@ namespace NCL {
 			int		GetWorldID() const {
 				return worldID;
 			}
+
+			void SetColour();
 
 			GameObjectType gOType;
 			bool springFired;

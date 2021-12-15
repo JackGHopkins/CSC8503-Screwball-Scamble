@@ -123,7 +123,7 @@
     <ClInclude Include="StateMachine.h">
       <Filter>StateMachine</Filter>
     </ClInclude>
-    <ClInclude Include="PushBlockStateMachine.h">
+    <ClInclude Include="SMPushBlock.h">
       <Filter>StateMachine</Filter>
     </ClInclude>
   </ItemGroup>
@@ -182,7 +182,7 @@
     <ClCompile Include="StateTransition.cpp">
       <Filter>StateMachine</Filter>
     </ClCompile>
-    <ClCompile Include="PushBlockStateMachine.cpp">
+    <ClCompile Include="SMPushBlock.cpp">
       <Filter>StateMachine</Filter>
     </ClCompile>
   </ItemGroup>

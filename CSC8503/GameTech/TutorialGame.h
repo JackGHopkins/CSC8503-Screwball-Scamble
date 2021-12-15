@@ -2,6 +2,7 @@
 #include "GameTechRenderer.h"
 #include "../CSC8503Common/PhysicsSystem.h"
 #include "../CSC8503Common/StateGameObject.h"
+#include "../CSC8503Common/SMPushBlock.h"
 
 namespace NCL {
 	namespace CSC8503 {
@@ -16,7 +17,7 @@ namespace NCL {
 			void InitialiseAssets();
 
 			void InitCamera();
-			void UpdateKeys();
+			void UpdateKeys(float dt);
 
 			void InitWorld();
 
@@ -37,10 +38,14 @@ namespace NCL {
 
 			GameObject* AddFloorToWorld(const Vector3& position);
 			GameObject* AddSphereToWorld(const Vector3& position, float radius, float inverseMass = 10.0f);
-			GameObject* AddCubeToWorld(const Vector3& position, Vector3 dimensions, Quaternion& orientation = Quaternion(0,0,0,0), float inverseMass = 10.0f);
-			GameObject* AddCapsuleToWorld(const Vector3& position, float halfheight, float radius, Quaternion& orientation = Quaternion(0, 0, 0, 0), float inverseMass = 10.0f);
-			GameObject* AddSpringBlockToWorld(const Vector3& position, Vector3 dimensions, Quaternion& orientation = Quaternion(0, 0, 0, 0), float inverseMass = 10.0f);
-			
+			GameObject* AddCubeToWorld(const Vector3& position, Vector3 dimensions, Quaternion& orientation = Quaternion(0,0,0,0),
+				float inverseMass = 10.0f, GameObjectType type = GameObjectType::_NULL);
+			GameObject* AddCapsuleToWorld(const Vector3& position, float halfheight, float radius, Quaternion& orientation = Quaternion(0, 0, 0, 0),
+				float inverseMass = 10.0f, GameObjectType type = GameObjectType::_NULL);
+			SMPushBlock* AddSpringBlockToWorld(const Vector3& position, Vector3 dimensions, Quaternion& orientation = Quaternion(0, 0, 0, 0), 
+				float inverseMass = 10.0f, Vector3 force = Vector3(0,100,0), float distance = 1.0f);
+			SMPushBlock* testPushBlock;
+
 			GameObject* AddCapsuleToWorld(const Vector3& position, float halfHeight, float radius, float inverseMass = 10.0f);
 
 			GameObject* AddPlayerToWorld(const Vector3& position);
@@ -59,6 +64,7 @@ namespace NCL {
 			float		forceMagnitude;
 
 			GameObject* selectionObject = nullptr;
+			std::vector<SMPushBlock*> vSprings;
 
 			OGLMesh*	capsuleMesh = nullptr;
 			OGLMesh*	cubeMesh	= nullptr;

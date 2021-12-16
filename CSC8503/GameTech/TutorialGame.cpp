@@ -17,6 +17,8 @@ TutorialGame::TutorialGame()	{
 	forceMagnitude	= 10.0f;
 	useGravity		= false;
 	inSelectionMode = false;
+	debugMenu		= false;
+	debugObject		= false;
 
 	Debug::SetRenderer(renderer);
 
@@ -82,7 +84,7 @@ void TutorialGame::UpdateGame(float dt) {
 		Debug::Print("(G)ravity off", Vector2(5, 95));
 	}
 
-	SelectObject();
+	SelectObject(dt);
 	MoveSelectedObject();
 	physics->Update(dt);
 
@@ -107,17 +109,25 @@ void TutorialGame::UpdateGame(float dt) {
 	if (testStateObject)
 		testStateObject->Update(dt);
 
+	if (debugMenu)
+		DebugMenu();
+
+	if (debugObject)
+		DebugObject();
+
 	for (auto i : vSprings) {
 		if (i)
 			i->Update(dt);
 	}
 
+	UpdateResetObjects(dt);
+	
 	world->UpdateWorld(dt);
 	renderer->Update(dt);
 
-
 	Debug::FlushRenderables(dt);
 	renderer->Render();
+
 }
 
 void TutorialGame::UpdateKeys(float dt) {
@@ -152,12 +162,22 @@ void TutorialGame::UpdateKeys(float dt) {
 	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F8)) {
 		world->ShuffleObjects(false);
 	}
+	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::F3)) {
+		debugMenu = !debugMenu;
+	}
+
 
 	if (lockedObject) {
 		LockedObjectMovement();
 	}
 	else {
 		DebugObjectMovement();
+	}
+
+	// Reset Ball
+	if (Window::GetKeyboard()->KeyPressed(NCL::KeyboardKeys::R)) {
+		ball->GetPhysicsObject()->SetLinearVelocity(Vector3(0, 0, 0));
+		ball->GetTransform().SetPosition(Vector3(16, 2, 16));
 	}
 
 	if (Window::GetKeyboard()->KeyPressed(NCL::KeyboardKeys::M)) {
@@ -253,9 +273,9 @@ void TutorialGame::DebugObjectMovement() {
 void TutorialGame::InitCamera() {
 	world->GetMainCamera()->SetNearPlane(0.1f);
 	world->GetMainCamera()->SetFarPlane(500.0f);
-	world->GetMainCamera()->SetPitch(-15.0f);
-	world->GetMainCamera()->SetYaw(315.0f);
-	world->GetMainCamera()->SetPosition(Vector3(-60, 40, 60));
+	world->GetMainCamera()->SetPitch(-90.0f);
+	world->GetMainCamera()->SetYaw(0.0f);
+	world->GetMainCamera()->SetPosition(Vector3(-0, 65, 0));
 	lockedObject = nullptr;
 }
 
@@ -276,29 +296,23 @@ void TutorialGame::InitCollisionTest() {
 	float sphereRadius = 1.0f;
 	Vector3 cubeDims = Vector3(1, 1, 1);
 	//AddCubeToWorld(Vector3(-5,5,-5), cubeDims, Quaternion(0, 0, 0.5, 1), 0);
-	//AddCapsuleToWorld(Vector3(-5, 20, -5), 5.0, 1.0, Quaternion(1, 0, 0, 1), 1.0f);
-	AddCubeToWorld(Vector3(0, 10, -20), Vector3(5,0.2,1), Quaternion(0, 0, 0, 1), 1.0f);
-	AddCubeToWorld(Vector3(20, 10, -20), Vector3(5,0.2,1), Quaternion(0, 0, 0, 1), 1.0f);
-	AddCubeToWorld(Vector3(10, 5, -20), Vector3(5,0.2,1), Quaternion(0, 0, 0, 1), 1.0f);
-	vSprings.emplace_back(AddSpringBlockToWorld(Vector3(-20, 5, -20), cubeDims, Quaternion(0, 0, 0, 1), 1.0f));
-	AddSphereToWorld(Vector3(-15,5,-20), sphereRadius, 1.0f);
-	AddSphereToWorld(Vector3(-0,5,-20), sphereRadius, 1.0f);
-	AddSphereToWorld(Vector3(-10,5,-20), sphereRadius, 1.0f);
+	AddCapsuleToWorld(Vector3(-5, 5, -5), 5.0, 1.0, Quaternion::EulerAnglesToQuaternion(90.0f,0.0f,0.0f), 0.0f);
+
 	//AddSphereToWorld(Vector3(-20,5,-20), sphereRadius, 1.0f);
-	AddSphereToWorld(Vector3(-25,5,-20), sphereRadius, 1.0f);
+	AddSphereToWorld(Vector3(-3,20,-5), sphereRadius, 1.0f);
 }
 
 void TutorialGame::InitGamemode1(){
 	float magNum = 2.0f;
 
 	// Ball
-	AddSphereToWorld(Vector3(16, 2, 16), 0.5f, 1.0f);
+	ball = AddSphereToWorld(Vector3(16, 2, 16), 0.5f, 1.0f);
 
 	// Reset Collider
-	AddCubeToWorld(Vector3(0, 0, 0), Vector3(20, -5, 20), Quaternion(0, 0, 0, 1), 0, GameObjectType::_RESET);
+	AddCubeToWorld(Vector3(0, -5, 0), Vector3(20, 0.5, 20), Quaternion(0, 0, 0, 1), 0, GameObjectType::_RESET);
 	
 	// Base Floor
-	AddCubeToWorld(Vector3(0, 0, 16), Vector3(5, 1, 2), Quaternion(0, 0, 0, 1), 0, GameObjectType::_FLOOR);
+	AddCubeToWorld(Vector3(16, 0, 16), Vector3(5, 1, 2), Quaternion(0, 0, 0, 1), 0, GameObjectType::_FLOOR);
 
 	// 1st Floor
 	AddCubeToWorld(Vector3(-15, 2, 13), Vector3(5, 1, 5), Quaternion(0, 0, 0, 1), 0, GameObjectType::_FLOOR);
@@ -321,18 +335,29 @@ void TutorialGame::InitGamemode1(){
 	AddCubeToWorld(Vector3(8, 2, 11), Vector3(4, 4, 1), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
 
 	AddCubeToWorld(Vector3(6.5, 2, -5), Vector3(2.5, 4, 13), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
-	AddCubeToWorld(Vector3(11, 2, 6), Vector3(2, 4, 2), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
-	AddCubeToWorld(Vector3(-12, 2, 7), Vector3(8, 4, 1), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
+	AddCubeToWorld(Vector3(10.5, 2, 6), Vector3(1.5, 4, 2), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
+	AddCubeToWorld(Vector3(-12, 2, 7), Vector3(8, 6, 1), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
 
 	// Springs
 	vSprings.emplace_back(AddSpringBlockToWorld(Vector3(19, 2, 16), Vector3(1,1,2), Quaternion(0, 0, 0, 1), 1.0f, Vector3(-250, 0, 0) ,3.0f));
 	vSprings.emplace_back(AddSpringBlockToWorld(Vector3(-19, 4, 10), Vector3(1,1,2), Quaternion(0, 0, 0, 1), 1.0f, Vector3(300, 0, 0), 2.5f));
-	vSprings.emplace_back(AddSpringBlockToWorld(Vector3(15, 4, 11), Vector3(3,1,1), Quaternion(0, 0, 0, 1), 1.0f, Vector3(0, 0, -300), 1.0f));
+	vSprings.emplace_back(AddSpringBlockToWorld(Vector3(15, 4, 11), Vector3(3,1,1), Quaternion(0, 0, 0, 1), 1.0f, Vector3(0, 0, -300), 2.0f));
 
 	// Ramps
-	AddCubeToWorld(Vector3(0, 1, 16), Vector3(11, 1, 2), Quaternion(0, 0, -0.047, 1), 0, GameObjectType::_RAMP);
-	AddCubeToWorld(Vector3(0, 5.34, 2), Vector3(4, 1, 6.5), Quaternion(0.315, 0, 0, 1), 0, GameObjectType::_RAMP);
+	AddCubeToWorld(Vector3(0, 1, 16), Vector3(11, 1, 2), Quaternion::EulerAnglesToQuaternion(0.0f, 0.0f, -5.8f), 0, GameObjectType::_RAMP);
+	AddCubeToWorld(Vector3(0, 5, 2), Vector3(4, 1, 6.5), Quaternion(0.315, 0, 0, 1), 0, GameObjectType::_RAMP);
 	AddCubeToWorld(Vector3(13.5, 2.5, 0), Vector3(4.5, 1, 6.5), Quaternion(0.12, 0, 0, 1), 0, GameObjectType::_RAMP);
+
+	// Log
+	fallingLog = AddCapsuleToWorld(Vector3(0, 12, 0), 2.0f, 0.4f, Quaternion(0, 0, 1, 1), 0.001f, GameObjectType::_LOG);
+
+	// Slime
+	AddCubeToWorld(Vector3(9.54, 2, 2), Vector3(1, 3.5, 3), Quaternion::EulerAnglesToQuaternion(0.0f, 45.0f, 0.0f), 0, GameObjectType::_SLIME);
+	AddCubeToWorld(Vector3(16.66, 2, 0), Vector3(1, 3.5, 3), Quaternion::EulerAnglesToQuaternion(0.0f, 45.0f, 0.0f), 0, GameObjectType::_SLIME);
+	AddCubeToWorld(Vector3(16.66, 2, -2.8), Vector3(1, 3.5, 3), Quaternion::EulerAnglesToQuaternion(0.0f, -45.0f, 0.0f), 0, GameObjectType::_SLIME);
+
+	// Button
+	AddCubeToWorld(Vector3(-16, 2, -16), Vector3(2, 1, 2), Quaternion(0,0,0,1), 0, GameObjectType::_BUTTON_SPRING);
 
 }
 
@@ -488,11 +513,11 @@ GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimens
 	cube->gOType = type;
 
 	cube->SetRenderObject(new RenderObject(&cube->GetTransform(), cubeMesh, basicTex, basicShader));
-	cube->SetColour();
 	cube->SetPhysicsObject(new PhysicsObject(&cube->GetTransform(), cube->GetBoundingVolume()));
 
 	cube->GetPhysicsObject()->SetInverseMass(inverseMass);
 	cube->GetPhysicsObject()->InitCubeInertia();
+	cube->InitObjType();
 
 	world->AddGameObject(cube);
 
@@ -525,7 +550,7 @@ SMPushBlock* TutorialGame::AddSpringBlockToWorld(const Vector3& position, Vector
 	spring->GetPhysicsObject()->InitCubeInertia();
 
 	spring->gOType = GameObjectType::_SPRING;
-	spring->SetColour();
+	spring->InitObjType();
 
 	world->AddGameObject(spring);
 
@@ -684,7 +709,7 @@ manipulated later. Pressing Q will let you toggle between this behaviour and ins
 letting you move the camera around. 
 
 */
-bool TutorialGame::SelectObject() {
+bool TutorialGame::SelectObject(float dt) {
 	if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::Q)) {
 		inSelectionMode = !inSelectionMode;
 		if (inSelectionMode) {
@@ -699,7 +724,7 @@ bool TutorialGame::SelectObject() {
 	if (inSelectionMode) {
 		renderer->DrawString("Press Q to change to camera mode!", Vector2(5, 85));
 
-		if (Window::GetMouse()->ButtonDown(NCL::MouseButtons::LEFT)) {
+		if (Window::GetMouse()->ButtonPressed(NCL::MouseButtons::LEFT)) {
 			if (selectionObject) {	//set colour to deselected;
 				selectionObject->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
 
@@ -712,6 +737,20 @@ bool TutorialGame::SelectObject() {
 			RayCollision closestCollision;
 			if (world->Raycast(ray, closestCollision, true)) {
 				selectionObject = (GameObject*)closestCollision.node;
+
+				if (selectionObject->gOType == GameObjectType::_BUTTON_SPRING) {
+					for (auto i : vSprings) {
+						if (i) {
+							i->springFired = true;
+							i->Update(dt);
+						}
+					}
+					return true;
+				}
+
+				if (selectionObject) {
+					debugObject = true;
+				}
 				selectionObject->GetRenderObject()->SetColour(Vector4(0, 1, 0, 1));
 				return true;
 			}
@@ -747,6 +786,22 @@ bool TutorialGame::SelectObject() {
 	return false;
 }
 
+void TutorialGame::UpdateResetObjects(float dt) {
+	if (fallingLog) {
+		if (fallingLog->gOType == GameObjectType::_RESET) {
+			fallingLog->GetPhysicsObject()->SetLinearVelocity(Vector3(0,0,0));
+			fallingLog->GetTransform().SetPosition(Vector3(0,12,0));
+			fallingLog->gOType = GameObjectType::_LOG;
+		}
+	}
+	if (ball) {
+		if (ball->gOType == GameObjectType::_RESET) {
+			ball->GetPhysicsObject()->SetLinearVelocity(Vector3(0, 0, 0));
+			ball->GetTransform().SetPosition(Vector3(16, 2, 16));
+			ball->gOType = GameObjectType::_NULL;
+		}
+	}
+}
 /*
 If an object has been clicked, it can be pushed with the right mouse button, by an amount
 determined by the scroll wheel. In the first tutorial this won't do anything, as we haven't
@@ -754,7 +809,7 @@ added linear motion into our physics system. After the second tutorial, objects 
 line - after the third, they'll be able to twist under torque aswell.
 */
 void TutorialGame::MoveSelectedObject() {
-	renderer->DrawString("Click Force:" + std::to_string(forceMagnitude), Vector2(10, 20)); //Draw debug text at 10,20
+	renderer->DrawString("Click Force:" + std::to_string(forceMagnitude), Vector2(0, 40)); //Draw debug text at 10,20
 	forceMagnitude += Window::GetMouse()->GetWheelMovement() * 100.0f;
 
 	if (!selectionObject) {
@@ -777,3 +832,24 @@ void TutorialGame::MoveSelectedObject() {
 			selectionObject->springFired = true;
 	}
 }
+
+void TutorialGame::DebugMenu() {
+	renderer->DrawString("Camera - X: " + std::to_string(world->GetMainCamera()->GetPosition().x), Vector2(0, 10));
+	renderer->DrawString("Camera - Y: " + std::to_string(world->GetMainCamera()->GetPosition().y), Vector2(0, 13));
+	renderer->DrawString("Camera - Z: " + std::to_string(world->GetMainCamera()->GetPosition().z), Vector2(0, 16));
+	renderer->DrawString("Camera - Pitch:" + std::to_string(world->GetMainCamera()->GetPitch()), Vector2(0, 20));
+	renderer->DrawString("Camera - Yaw:" + std::to_string(world->GetMainCamera()->GetYaw()), Vector2(0, 30));
+}
+
+void TutorialGame::DebugObject() {
+	debugMenu = false;
+	renderer->DrawString("Name:" + selectionObject->GetName(), Vector2(0, 5));
+	renderer->DrawString("X: " + std::to_string(selectionObject->GetTransform().GetPosition().x), Vector2(0, 10));
+	renderer->DrawString("Y: " + std::to_string(selectionObject->GetTransform().GetPosition().y), Vector2(0, 13));
+	renderer->DrawString("Z: " + std::to_string(selectionObject->GetTransform().GetPosition().z), Vector2(0, 16));
+	renderer->DrawString("Orientation X:" + std::to_string(selectionObject->GetTransform().GetOrientation().ToEuler().x), Vector2(0, 20));
+	renderer->DrawString("Orientation Y:" + std::to_string(selectionObject->GetTransform().GetOrientation().ToEuler().y), Vector2(0, 23));
+	renderer->DrawString("Orientation Z:" + std::to_string(selectionObject->GetTransform().GetOrientation().ToEuler().z), Vector2(0, 26));
+}
+
+

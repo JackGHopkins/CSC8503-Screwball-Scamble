@@ -19,7 +19,10 @@ namespace NCL {
 			_RESET = 3,
 			_RAMP = 4,
 			_FLOOR = 5,
-			_WALL = 6
+			_WALL = 6,
+			_LOG = 7,
+			_BUTTON_SPRING
+
 		};
 
 		class GameObject	{
@@ -87,7 +90,7 @@ namespace NCL {
 				return worldID;
 			}
 
-			void SetColour();
+			void InitObjType();
 
 			GameObjectType gOType;
 			bool springFired;

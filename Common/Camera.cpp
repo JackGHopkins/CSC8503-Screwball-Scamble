@@ -25,7 +25,7 @@ void Camera::UpdateCamera(float dt) {
 		yaw -= 360.0f;
 	}
 
-	float frameSpeed = 100 * dt;
+	float frameSpeed = 10 * dt;
 
 	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::W)) {
 		position += Matrix4::Rotation(yaw, Vector3(0, 1, 0)) * Vector3(0, 0, -1) * frameSpeed;

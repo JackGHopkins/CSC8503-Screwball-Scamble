@@ -18,6 +18,7 @@ namespace NCL {
 
 			void InitCamera();
 			void UpdateKeys(float dt);
+			void UpdateResetObjects(float dt);
 
 			void InitWorld();
 
@@ -31,9 +32,11 @@ namespace NCL {
 			void InitGamemode1();
 			void BridgeConstraintTest();
 	
-			bool SelectObject();
+			bool SelectObject(float dt);
 			void MoveSelectedObject();
 			void DebugObjectMovement();
+			void DebugMenu();
+			void DebugObject();
 			void LockedObjectMovement();
 
 			GameObject* AddFloorToWorld(const Vector3& position);
@@ -52,7 +55,11 @@ namespace NCL {
 			GameObject* AddEnemyToWorld(const Vector3& position);
 			GameObject* AddBonusToWorld(const Vector3& position);
 			StateGameObject* AddStateObjectToWorld(const Vector3& position);
-			StateGameObject * testStateObject;
+
+
+			GameObject* fallingLog;
+			GameObject* ball;
+			StateGameObject* testStateObject;
 
 			GameTechRenderer*	renderer;
 			PhysicsSystem*		physics;
@@ -60,6 +67,8 @@ namespace NCL {
 
 			bool useGravity;
 			bool inSelectionMode;
+			bool debugMenu;
+			bool debugObject;
 
 			float		forceMagnitude;
 

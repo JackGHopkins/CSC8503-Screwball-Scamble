@@ -17,6 +17,7 @@ GameObject::~GameObject()	{
 	delete boundingVolume;
 	delete physicsObject;
 	delete renderObject;
+	isActive = false;
 }
 
 bool GameObject::GetBroadphaseAABB(Vector3&outSize) const {
@@ -46,26 +47,39 @@ void GameObject::UpdateBroadphaseAABB() {
 	}
 }
 
-void GameObject::SetColour() {
+void GameObject::InitObjType() {
 	switch (gOType)
 	{
+	case GameObjectType::_BUTTON_SPRING:
+		this->GetRenderObject()->SetColour(Vector4(1, 1, 0, 1));
+		this->GetPhysicsObject()->SetElasticity(0.5);
 	case GameObjectType::_FLOOR:
 		this->GetRenderObject()->SetColour(Vector4(1, 0, 0, 1));
+		this->GetPhysicsObject()->SetElasticity(0.5);
+		break;
+	case GameObjectType::_LOG:
+		this->GetRenderObject()->SetColour(Vector4(0.5, 0.2, 0, 1));
+		this->GetPhysicsObject()->SetElasticity(0.5);
 		break;
 	case GameObjectType::_RAMP:
 		this->GetRenderObject()->SetColour(Vector4(0.5, 0, 0, 1));
+		this->GetPhysicsObject()->SetElasticity(0.5);
 		break;
 	case GameObjectType::_RESET:
 		this->GetRenderObject()->SetColour(Vector4(0, 0, 0, 1));
+		this->GetPhysicsObject()->SetElasticity(0);
 		break;
 	case GameObjectType::_SLIME:
 		this->GetRenderObject()->SetColour(Vector4(0, 1, 0, 1));
+		this->GetPhysicsObject()->SetElasticity(2.0);
 		break;
 	case GameObjectType::_SPRING:
 		this->GetRenderObject()->SetColour(Vector4(1, 0, 1, 1));
+		this->GetPhysicsObject()->SetElasticity(0.8);
 		break;
 	case GameObjectType::_WALL:
 		this->GetRenderObject()->SetColour(Vector4(0, 0, 1, 1));
+		this->GetPhysicsObject()->SetElasticity(0.5);
 		break;
 	default:
 		break;

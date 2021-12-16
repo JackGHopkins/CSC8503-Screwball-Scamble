@@ -146,13 +146,15 @@ void GameTechRenderer::RenderShadowMap() {
 	shadowMatrix = biasMatrix * mvMatrix; //we'll use this one later on
 
 	for (const auto&i : activeObjects) {
-		Matrix4 modelMatrix = (*i).GetTransform()->GetMatrix();
-		Matrix4 mvpMatrix	= mvMatrix * modelMatrix;
-		glUniformMatrix4fv(mvpLocation, 1, false, (float*)&mvpMatrix);
-		BindMesh((*i).GetMesh());
-		int layerCount = (*i).GetMesh()->GetSubMeshCount();
-		for (int i = 0; i < layerCount; ++i) {
-			DrawBoundMesh(i);
+		if (i) {
+			Matrix4 modelMatrix = (*i).GetTransform()->GetMatrix();
+			Matrix4 mvpMatrix = mvMatrix * modelMatrix;
+			glUniformMatrix4fv(mvpLocation, 1, false, (float*)&mvpMatrix);
+			BindMesh((*i).GetMesh());
+			int layerCount = (*i).GetMesh()->GetSubMeshCount();
+			for (int i = 0; i < layerCount; ++i) {
+				DrawBoundMesh(i);
+			}
 		}
 	}
 

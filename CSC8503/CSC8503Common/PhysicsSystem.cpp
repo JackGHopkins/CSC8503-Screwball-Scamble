@@ -202,8 +202,16 @@ void PhysicsSystem::BasicCollisionDetection() {
 			if ((*j)->GetPhysicsObject() == nullptr) {
 				continue;
 			}
+			if ((*j)->GetPhysicsObject()->GetInverseMass() == 0.0f && (*i)->GetPhysicsObject()->GetInverseMass() == 0.0f)
+			{
+				continue;
+			}
 			CollisionDetection::CollisionInfo info;
 			if (CollisionDetection::ObjectIntersection(*i, *j, info)) {
+				if ((*i)->gOType == GameObjectType::_RESET || (*j)->gOType == GameObjectType::_RESET) {
+					(*i)->gOType = GameObjectType::_RESET;
+					(*j)->gOType = GameObjectType::_RESET;
+				}
 				std::cout << "Collision between " << (*i)->GetName() << " and " << (*j)->GetName() << std::endl;
 				ImpulseResolveCollision(*info.a, *info.b, info.point);
 				info.framesLeft = numCollisionFrames;
@@ -254,7 +262,7 @@ void PhysicsSystem::ImpulseResolveCollision(GameObject& a, GameObject& b, Collis
 	Vector3 inertiaB = Vector3::Cross(physB->GetInertiaTensor() * Vector3::Cross(relativeB, p.normal), relativeB);
 	float angularEffect = Vector3::Dot(inertiaA + inertiaB, p.normal);
 	
-	float cRestitution = 0.66f; // disperse some kinectic energy
+	float cRestitution = a.GetPhysicsObject()->GetElasticity() * b.GetPhysicsObject()->GetElasticity(); // disperse some kinectic energy
 	
 	float j = (-(1.0f + cRestitution) * impulseForce) /(totalMass + angularEffect);
 	Vector3 fullImpulse = p.normal * j;

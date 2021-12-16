@@ -24,7 +24,8 @@ namespace NCL {
 			_BUTTON_SPRING,
 			_GOAL,
 			_COIN,
-			_COIN_COLLECTED
+			_COIN_COLLECTED,
+			_WALL_NO_BOUNCE
 		};
 
 		class GameObject	{

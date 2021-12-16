@@ -15,17 +15,47 @@ TutorialGame::TutorialGame()	{
 	physics		= new PhysicsSystem(*world);
 
 	forceMagnitude	= 10.0f;
-	useGravity		= false;
+	useGravity		= true;
 	inSelectionMode = true;
 	debugMenu		= false;
 	debugObject		= false;
 	finished		= false;
-	timer			= 0.0f;
+	timer			= 5.0f;
 	score			= 0;
+	fState			= FinishState::_NULL;
 
 	Debug::SetRenderer(renderer);
 
 	InitialiseAssets();
+}
+
+void TutorialGame::ResetRenderer() {
+	Debug::SetRenderer(renderer);
+}
+
+void NCL::CSC8503::TutorialGame::PrintPause()
+{
+	renderer->DrawString("Game: PAUSED", Vector2(10, 10));
+}
+
+void NCL::CSC8503::TutorialGame::PrintWin()
+{
+	renderer->DrawString("Game: WON", Vector2(10, 10));
+	renderer->DrawString("Press '0' to Quit", Vector2(10, 20));;
+	while (!Window::GetKeyboard()->KeyPressed(KeyboardKeys::NUM0))
+	{
+
+	}
+}
+
+void NCL::CSC8503::TutorialGame::PrintLose()
+{
+	renderer->DrawString("Game: LOSE", Vector2(10, 10));
+	renderer->DrawString("Press '0' to Quit", Vector2(10, 20));;
+	while (!Window::GetKeyboard()->KeyPressed(KeyboardKeys::NUM0))
+	{
+		
+	}
 }
 
 /*
@@ -74,14 +104,17 @@ TutorialGame::~TutorialGame()	{
 }
 
 void TutorialGame::UpdateGame(float dt) {
-	if (!finished)
-		timer += dt;
-	renderer->DrawString("Time:" + std::to_string(round(int(timer * 100)) / 100), Vector2(70, 5));
-	renderer->DrawString("Score:" + std::to_string(round(score)), Vector2(70, 10));
 
 	if (finished) {
 		world->ClearForces();
+		for (auto i : world->GetGameObjects()) {
+			i->GetPhysicsObject()->SetLinearVelocity(Vector3(0, 0, 0));
+			i->GetPhysicsObject()->SetAngularVelocity(Vector3(0, 0, 0));
+		}
 		useGravity = false;
+	}
+	else {
+		UpdateTimer(dt);
 	}
 
 	if (!inSelectionMode) {
@@ -355,7 +388,7 @@ void TutorialGame::InitGamemode1(){
 
 	AddCubeToWorld(Vector3(19, 2, -3), Vector3(1, 8, 15), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
 	AddCubeToWorld(Vector3(6.5, 2, -5), Vector3(2.5, 8, 13), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
-	AddCubeToWorld(Vector3(12, 2, -19), Vector3(8,8, 1), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
+	AddCubeToWorld(Vector3(12, 2, -19), Vector3(8,8, 1), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL_NO_BOUNCE);
 
 	AddCubeToWorld(Vector3(-11.3334, 4, 11.9), Vector3(2, 2, 1), Quaternion(0, 0.268, 0, 1), 0, GameObjectType::_WALL); // Tilted Corner
 	AddCubeToWorld(Vector3(-7, 2, 11), Vector3(3, 4, 1), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
@@ -366,19 +399,19 @@ void TutorialGame::InitGamemode1(){
 	AddCubeToWorld(Vector3(-12, 2, 7), Vector3(8, 6, 1), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
 
 	// Springs
-	vSprings.emplace_back(AddSpringBlockToWorld(Vector3(19, 2, 16), Vector3(1,1,2), Quaternion(0, 0, 0, 1), 1.0f, Vector3(-250, 0, 0) ,3.0f));
+	vSprings.emplace_back(AddSpringBlockToWorld(Vector3(19, 2, 16), Vector3(1,1,2), Quaternion(0, 0, 0, 1), 1.0f, Vector3(-300, 0, 0) ,3.0f));
 	vSprings.emplace_back(AddSpringBlockToWorld(Vector3(-19, 4, 10), Vector3(1,1,2), Quaternion(0, 0, 0, 1), 1.0f, Vector3(300, 0, 0), 2.5f));
 	vSprings.emplace_back(AddSpringBlockToWorld(Vector3(15, 4, 11), Vector3(3,1,1), Quaternion(0, 0, 0, 1), 1.0f, Vector3(0, 0, -300), 2.0f));
 
 	// Ramps
 	AddCubeToWorld(Vector3(0, 1, 16), Vector3(11, 1, 2), Quaternion::EulerAnglesToQuaternion(0.0f, 0.0f, -5.8f), 0, GameObjectType::_RAMP);
-	AddCubeToWorld(Vector3(0, 7, 2), Vector3(4, 1, 6.5), Quaternion(0.315, 0, 0, 1), 0, GameObjectType::_RAMP);
+	AddCubeToWorld(Vector3(0, 6.5, 2), Vector3(4, 1, 6.5), Quaternion(0.315, 0, 0, 1), 0, GameObjectType::_RAMP);
 	AddCubeToWorld(Vector3(13.5, 3.5, 0), Vector3(4.5, 1, 6.5), Quaternion(0.12, 0, 0, 1), 0, GameObjectType::_RAMP);
 
 	// Slime
-	AddCubeToWorld(Vector3(9.54, 2, 2), Vector3(1, 3.5, 3), Quaternion::EulerAnglesToQuaternion(0.0f, 45.0f, 0.0f), 0, GameObjectType::_SLIME);
-	AddCubeToWorld(Vector3(16.66, 2, 0), Vector3(1, 3.5, 3), Quaternion::EulerAnglesToQuaternion(0.0f, 45.0f, 0.0f), 0, GameObjectType::_SLIME);
-	AddCubeToWorld(Vector3(16.66, 2, -2.8), Vector3(1, 3.5, 3), Quaternion::EulerAnglesToQuaternion(0.0f, -45.0f, 0.0f), 0, GameObjectType::_SLIME);
+	AddCubeToWorld(Vector3(9.54, 2, 2), Vector3(1, 5, 3), Quaternion::EulerAnglesToQuaternion(0.0f, 45.0f, 0.0f), 0, GameObjectType::_SLIME);
+	AddCubeToWorld(Vector3(16.66, 2, 0), Vector3(1, 5, 3), Quaternion::EulerAnglesToQuaternion(0.0f, 45.0f, 0.0f), 0, GameObjectType::_SLIME);
+	AddCubeToWorld(Vector3(17.5, 2, -3.2), Vector3(1, 5, 2), Quaternion::EulerAnglesToQuaternion(0.0f, -45.0f, 0.0f), 0, GameObjectType::_SLIME);
 
 	// Button
 	AddCubeToWorld(Vector3(-16, 2, -16), Vector3(2, 1, 2), Quaternion(0,0,0,1), 0, GameObjectType::_BUTTON_SPRING);
@@ -758,7 +791,7 @@ bool TutorialGame::SelectObject(float dt) {
 
 		if (Window::GetMouse()->ButtonPressed(NCL::MouseButtons::LEFT)) {
 			if (selectionObject) {	//set colour to deselected;
-				selectionObject->GetRenderObject()->SetColour(Vector4(1, 1, 1, 1));
+				selectionObject->InitObjType();
 
 				selectionObject = nullptr;
 				lockedObject = nullptr;
@@ -834,6 +867,7 @@ void TutorialGame::UpdateObjectState(float dt) {
 		}
 		if (ball->gOType == GameObjectType::_GOAL) {
 			finished = true;
+			fState = FinishState::_WIN;
 		}
 	}
 	for (int i = 0; i < coins.size(); i++) {
@@ -846,6 +880,14 @@ void TutorialGame::UpdateObjectState(float dt) {
 			coins.erase(coins.begin() + i);
 		}
 	}
+}
+
+void TutorialGame::UpdateTimer(float dt) {
+	timer = (!finished) ? timer -= dt : timer;
+	finished = (timer >= 0) ? false : true;
+	fState = (timer >= 0) ? FinishState::_NULL : FinishState::_LOSE;
+	renderer->DrawString("Time:" + std::to_string(round(int(timer * 100)) / 100), Vector2(70, 5));
+	renderer->DrawString("Score:" + std::to_string(round(score)), Vector2(70, 10));
 }
 /*
 If an object has been clicked, it can be pushed with the right mouse button, by an amount

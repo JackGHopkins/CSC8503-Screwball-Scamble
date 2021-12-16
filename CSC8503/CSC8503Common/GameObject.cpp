@@ -71,7 +71,7 @@ void GameObject::InitObjType() {
 		this->GetPhysicsObject()->SetElasticity(0.1);
 		break;
 	case GameObjectType::_LOG:
-		this->GetRenderObject()->SetColour(Vector4(0.5, 0.2, 0, 1));
+		this->GetRenderObject()->SetColour(Vector4(0, 0, 0, 1));
 		this->GetPhysicsObject()->SetElasticity(0.5);
 		break;
 	case GameObjectType::_RAMP:
@@ -83,8 +83,8 @@ void GameObject::InitObjType() {
 		this->GetPhysicsObject()->SetElasticity(0);
 		break;
 	case GameObjectType::_SLIME:
-		this->GetRenderObject()->SetColour(Vector4(0, 1, 0, 1));
-		this->GetPhysicsObject()->SetElasticity(2.0);
+		this->GetRenderObject()->SetColour(Vector4(0.5, 1, 0, 1));
+		this->GetPhysicsObject()->SetElasticity(1.7);
 		break;
 	case GameObjectType::_SPRING:
 		this->GetRenderObject()->SetColour(Vector4(1, 0, 1, 1));
@@ -93,6 +93,10 @@ void GameObject::InitObjType() {
 	case GameObjectType::_WALL:
 		this->GetRenderObject()->SetColour(Vector4(0.05, 0.05, 1, 1));
 		this->GetPhysicsObject()->SetElasticity(0.5);
+		break;
+	case GameObjectType::_WALL_NO_BOUNCE:
+		this->GetRenderObject()->SetColour(Vector4(0.05, 0.05, 1, 1));
+		this->GetPhysicsObject()->SetElasticity(0.1);
 		break;
 	default:
 		break;

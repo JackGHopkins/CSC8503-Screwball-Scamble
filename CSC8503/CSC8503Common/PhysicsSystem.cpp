@@ -21,8 +21,8 @@ and the forces that are added to objects to change those positions
 */
 
 PhysicsSystem::PhysicsSystem(GameWorld& g) : gameWorld(g)	{
-	applyGravity	= false;
-	useBroadPhase	= false;	
+	applyGravity	= true;
+	useBroadPhase	= true;	
 	dTOffset		= 0.0f;
 	globalDamping	= 0.995f;
 	SetGravity(Vector3(0.0f, -9.8f, 0.0f));
@@ -295,8 +295,10 @@ void PhysicsSystem::ImpulseResolveCollision(GameObject& a, GameObject& b, Collis
 	float j_Friction = (-(cFriction * (Vector3::Dot(contactVelocity, tNormal)))) / (totalMass + Vector3::Dot(frictionA + frictionB, tNormal));
 	Vector3 frictionImpulse = tNormal * j_Friction;
 
-	physA->ApplyAngularImpulse(Vector3::Cross(relativeA, -frictionImpulse));
-	physB->ApplyAngularImpulse(Vector3::Cross(relativeB, frictionImpulse));
+	if (a.GetBoundingVolume()->type != VolumeType::Capsule && b.GetBoundingVolume()->type != VolumeType::Capsule) {
+		physA->ApplyAngularImpulse(Vector3::Cross(relativeA, -frictionImpulse));
+		physB->ApplyAngularImpulse(Vector3::Cross(relativeB, frictionImpulse));
+	}
 }
 
 /*

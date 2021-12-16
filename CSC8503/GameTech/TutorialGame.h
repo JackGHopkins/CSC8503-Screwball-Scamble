@@ -6,6 +6,12 @@
 
 namespace NCL {
 	namespace CSC8503 {
+		enum class FinishState {
+			_NULL = 0,
+			_LOSE,
+			_WIN
+		};
+
 		class TutorialGame		{
 		public:
 			TutorialGame();
@@ -13,12 +19,22 @@ namespace NCL {
 
 			virtual void UpdateGame(float dt);
 
+			float GetTimer() { return timer; }
+			float GetScore() { return score; }
+			GameTechRenderer* GetRenderer() { return renderer; }
+			void ResetRenderer();
+			void PrintPause();
+			void PrintWin();
+			void PrintLose();
+
+			FinishState fState;
 		protected:
 			void InitialiseAssets();
 
 			void InitCamera();
 			void UpdateKeys(float dt);
 			void UpdateObjectState(float dt);
+			void UpdateTimer(float dt);
 
 			void InitWorld();
 
@@ -38,6 +54,8 @@ namespace NCL {
 			void DebugMenu();
 			void DebugObject();
 			void LockedObjectMovement();
+
+
 
 			GameObject* AddFloorToWorld(const Vector3& position);
 			GameObject* AddSphereToWorld(const Vector3& position, float radius, float inverseMass = 10.0f, GameObjectType type = GameObjectType::_NULL);

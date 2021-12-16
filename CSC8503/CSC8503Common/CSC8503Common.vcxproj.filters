@@ -126,6 +126,9 @@
     <ClInclude Include="SMPushBlock.h">
       <Filter>StateMachine</Filter>
     </ClInclude>
+    <ClInclude Include="Header.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameWorld.cpp">

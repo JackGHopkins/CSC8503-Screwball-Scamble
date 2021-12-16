@@ -313,11 +313,15 @@ void TutorialGame::InitWorld() {
 void TutorialGame::InitCollisionTest() {
 	float sphereRadius = 1.0f;
 	Vector3 cubeDims = Vector3(1, 1, 1);
-	//AddCubeToWorld(Vector3(-5,5,-5), cubeDims, Quaternion(0, 0, 0.5, 1), 0);
-	AddCapsuleToWorld(Vector3(-5, 5, -5), 5.0, 1.0, Quaternion::EulerAnglesToQuaternion(90.0f,0.0f,0.0f), 0.0f);
+	AddCubeToWorld(Vector3(-10,5,-5), cubeDims, Quaternion(0, 0, 0, 1), 1.0f);
+	AddCubeToWorld(Vector3(-5,5,-5), cubeDims, Quaternion(0, 0, 0.5, 1), 0.0f);
+	fallingLog = AddCapsuleToWorld(Vector3(0, 12, 0), 2.0f, 0.4f, Quaternion::EulerAnglesToQuaternion(0.0f, 0.0f, 90.0f), 0.001f);
+	AddCubeToWorld(Vector3(0, 6, 2), Vector3(4, 1, 6.5), Quaternion(0.315, 0, 0, 1), 0, GameObjectType::_RAMP);
+	//AddCubeToWorld(Vector3(13.5, 3.5, 0), Vector3(4.5, 1, 6.5), Quaternion(0.12, 0, 0, 1), 0, GameObjectType::_RAMP);
 
-	//AddSphereToWorld(Vector3(-20,5,-20), sphereRadius, 1.0f);
-	AddSphereToWorld(Vector3(-3,20,-5), sphereRadius, 1.0f);
+	AddSphereToWorld(Vector3(-20,5,-20), sphereRadius, 1.0f);
+	//AddSphereToWorld(Vector3(-3,20,-5), sphereRadius, 1.0f);
+	vSprings.emplace_back(AddSpringBlockToWorld(Vector3(19, 2, 16), Vector3(1, 1, 2), Quaternion(0, 0, 0, 1), 1.0f, Vector3(-250, 0, 0), 3.0f));
 }
 
 void TutorialGame::InitGamemode1(){
@@ -325,6 +329,9 @@ void TutorialGame::InitGamemode1(){
 
 	// Ball
 	ball = AddSphereToWorld(Vector3(16, 2, 16), 0.5f, 1.0f);
+
+	// Log
+	fallingLog = AddCapsuleToWorld(Vector3(0, 12, 0), 2.0f, 0.4f, Quaternion::EulerAnglesToQuaternion(0.0f, 0.0f, 90.0f), 0.001f);
 
 	// Reset Collider
 	AddCubeToWorld(Vector3(0, -5, 0), Vector3(20, 0.5, 20), Quaternion(0, 0, 0, 1), 0, GameObjectType::_RESET);
@@ -334,8 +341,8 @@ void TutorialGame::InitGamemode1(){
 
 	// 1st Floor
 	AddCubeToWorld(Vector3(-15, 2, 13), Vector3(5, 1, 5), Quaternion(0, 0, 0, 1), 0, GameObjectType::_FLOOR);
-	AddCubeToWorld(Vector3(0, 1, 9), Vector3(11, 1, 1), Quaternion(0, 0, 0, 1), 0, GameObjectType::_FLOOR);
-	AddCubeToWorld(Vector3(14, 1, 9), Vector3(4, 1, 3), Quaternion(0, 0, 0, 1), 0, GameObjectType::_FLOOR);
+	AddCubeToWorld(Vector3(0, 2, 9), Vector3(11, 1, 1), Quaternion(0, 0, 0, 1), 0, GameObjectType::_FLOOR);
+	AddCubeToWorld(Vector3(14, 2, 9), Vector3(4, 1, 3), Quaternion(0, 0, 0, 1), 0, GameObjectType::_FLOOR);
 
 	// GOAL
 	AddCubeToWorld(Vector3(13.5, 3, -16), Vector3(4.5, 1, 2), Quaternion(0, 0, 0, 1), 0, GameObjectType::_GOAL);
@@ -365,11 +372,8 @@ void TutorialGame::InitGamemode1(){
 
 	// Ramps
 	AddCubeToWorld(Vector3(0, 1, 16), Vector3(11, 1, 2), Quaternion::EulerAnglesToQuaternion(0.0f, 0.0f, -5.8f), 0, GameObjectType::_RAMP);
-	AddCubeToWorld(Vector3(0, 5, 2), Vector3(4, 1, 6.5), Quaternion(0.315, 0, 0, 1), 0, GameObjectType::_RAMP);
-	AddCubeToWorld(Vector3(13.5, 2.5, 0), Vector3(4.5, 1, 6.5), Quaternion(0.12, 0, 0, 1), 0, GameObjectType::_RAMP);
-
-	// Log
-	fallingLog = AddCapsuleToWorld(Vector3(0, 12, 0), 2.0f, 0.4f, Quaternion(0, 0, 1, 1), 0.001f, GameObjectType::_LOG);
+	AddCubeToWorld(Vector3(0, 6, 2), Vector3(4, 1, 6.5), Quaternion(0.315, 0, 0, 1), 0, GameObjectType::_RAMP);
+	AddCubeToWorld(Vector3(13.5, 3.5, 0), Vector3(4.5, 1, 6.5), Quaternion(0.12, 0, 0, 1), 0, GameObjectType::_RAMP);
 
 	// Slime
 	AddCubeToWorld(Vector3(9.54, 2, 2), Vector3(1, 3.5, 3), Quaternion::EulerAnglesToQuaternion(0.0f, 45.0f, 0.0f), 0, GameObjectType::_SLIME);
@@ -382,6 +386,8 @@ void TutorialGame::InitGamemode1(){
 	// Coins
 	coins.emplace_back(AddSphereToWorld(Vector3(-12, 4, 16), 1.0f, 1.0f, GameObjectType::_COIN));
 	coins.emplace_back(AddSphereToWorld(Vector3(10, 4, 9), 1.0f, 1.0f, GameObjectType::_COIN));
+	coins.emplace_back(AddSphereToWorld(Vector3(-14, 4, 9), 1.0f, 1.0f, GameObjectType::_COIN));
+	coins.emplace_back(AddSphereToWorld(Vector3(3, 10, 0), 0.5f, 0.0f, GameObjectType::_COIN));
 }
 
 //void TutorialGame::BridgeConstraintTest() {

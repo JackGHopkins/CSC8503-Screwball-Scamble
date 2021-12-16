@@ -172,12 +172,11 @@ void PhysicsSystem::UpdateCollisionList() {
 }
 
 void PhysicsSystem::UpdateObjectAABBs() {
-	std::vector <GameObject*>::const_iterator first;
-	std::vector <GameObject*>::const_iterator last;
-	gameWorld.GetObjectIterators(first, last);
-	for (auto i = first; i != last; ++i) {
-		(*i)->UpdateBroadphaseAABB();
-	}
+	gameWorld.OperateOnContents(
+		[](GameObject* g) {
+			g->UpdateBroadphaseAABB();
+		}
+	);
 }
 
 /*
@@ -298,7 +297,7 @@ compare the collisions that we absolutely need to.
 
 void PhysicsSystem::BroadPhase() {
 	broadphaseCollisions.clear();
-	QuadTree <GameObject*> tree(Vector2(1024, 1024), 7, 6);
+	QuadTree <GameObject*> tree(Vector2(1024, 1024), 7, gameWorld.GetGameObjects().size() + 1);
 
 	std::vector <GameObject*>::const_iterator first;
 	std::vector <GameObject*>::const_iterator last;
@@ -309,12 +308,29 @@ void PhysicsSystem::BroadPhase() {
 			continue;
 		}
 		Vector3 pos = (*i)->GetTransform().GetPosition();
-		tree.Insert(*i, pos, halfSizes);
+		if ((*i)->GetBoundingVolume()->type == VolumeType::Capsule) {
+			//std::cout << "here we are 1" << std::endl;				// The reason for this commented out code is to display why my Quad Tree library issue if needed. I spent 50mins with Giacomo. The error is not the fault of my code.
+			tree.Insert(*i, pos, halfSizes);
+		} else
+
+			tree.Insert(*i, pos, halfSizes);
 	}
+	/*std::set<size_t> items;
+	tree.OperateOnContents(
+		[&](std::list <QuadTreeEntry <GameObject*>>& data) {
+			for (auto i = data.begin(); i != data.end(); ++i)
+				items.insert((size_t)i->object->GetBoundingVolume()->type);
+		});
+	for (size_t x : items)
+		std::cout << x << ", ";
+	std::cout << std::endl; */
 	tree.OperateOnContents(
 		[&](std::list <QuadTreeEntry <GameObject*>>& data) {
 			CollisionDetection::CollisionInfo info;
 			for (auto i = data.begin(); i != data.end(); ++i) {
+				if (i->object->GetBoundingVolume()->type == VolumeType::Capsule) {
+					//std::cout << "here we are " << std::endl;
+				}
 				for (auto j = std::next(i); j != data.end(); ++j) {
 					//is this pair of items already in the collision set -
 					//if the same pair is in another quadtree node together etc
@@ -323,7 +339,13 @@ void PhysicsSystem::BroadPhase() {
 					broadphaseCollisions.insert(info);
 				}
 			}
+			/*if ((data.size() == 1)) {
+				std::cout <<
+					(size_t)data.begin()->object->GetBoundingVolume()->type
+					<< std::endl;
+			}*/
 		});
+	tree.DebugDraw();
 }
 
 /*
@@ -336,10 +358,34 @@ void PhysicsSystem::NarrowPhase() {
 		i = broadphaseCollisions.begin();
 		i != broadphaseCollisions.end(); ++i) {
 		CollisionDetection::CollisionInfo info = *i;
+		if ((info.a)->GetPhysicsObject()->GetInverseMass() == 0.0f && (info.b)->GetPhysicsObject()->GetInverseMass() == 0.0f)
+		{
+			continue;
+		}
+
+		//std::cout << "Collision between " << info.a->GetName() << " and " << info.b->GetName() << std::endl;
+
 		if (CollisionDetection::ObjectIntersection(info.a, info.b, info)) {
-			std::cout << "Collision between " << info.a->GetName() << " and " << info.b->GetName() << std::endl;
-			ImpulseResolveCollision(*info.a, *info.b, info.point);
+			if ((info.a)->gOType == GameObjectType::_RESET || (info.b)->gOType == GameObjectType::_RESET) {
+				(info.a)->gOType = GameObjectType::_RESET;
+				(info.b)->gOType = GameObjectType::_RESET;
+			}
+			if ((info.a)->gOType == GameObjectType::_GOAL || (info.b)->gOType == GameObjectType::_GOAL) {
+				(info.a)->gOType = GameObjectType::_GOAL;
+				(info.b)->gOType = GameObjectType::_GOAL;
+			}
+			if ((info.b)->gOType == GameObjectType::_NULL && (info.a)->gOType == GameObjectType::_COIN) {
+				(info.a)->gOType = GameObjectType::_COIN_COLLECTED;
+				continue;
+			}
+			if ((info.b)->gOType == GameObjectType::_COIN && (info.a)->gOType == GameObjectType::_NULL) {
+				(info.b)->gOType = GameObjectType::_COIN_COLLECTED;
+				continue;
+			}
+
+
 			info.framesLeft = numCollisionFrames;
+			ImpulseResolveCollision(*info.a, *info.b, info.point);
 			allCollisions.insert(info);;
 		}
 	}

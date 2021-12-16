@@ -18,14 +18,14 @@ namespace NCL {
 			T object;
 
 			QuadTreeEntry(T obj, Vector3 pos, Vector3 size) {
-				object		= obj;
-				this->pos	= pos;
-				this->size	= size;
+				object = obj;
+				this->pos = pos;
+				this->size = size;
 			}
 		};
 
 		template<class T>
-		class QuadTreeNode	{
+		class QuadTreeNode {
 		public:
 			typedef std::function<void(std::list<QuadTreeEntry<T>>&)> QuadTreeFunc;
 		protected:
@@ -34,9 +34,9 @@ namespace NCL {
 			QuadTreeNode() {}
 
 			QuadTreeNode(Vector2 pos, Vector2 size) {
-				children		= nullptr;
-				this->position	= pos;
-				this->size		= size;
+				children = nullptr;
+				this->position = pos;
+				this->size = size;
 			}
 
 			~QuadTreeNode() {
@@ -51,7 +51,8 @@ namespace NCL {
 				}
 				if (children) { //not a leaf node , just descend the tree
 					for (int i = 0; i < 4; ++i) {
-						children[i].Insert(object, objectPos, objectSize, depthLeft - 1, maxSize);
+						children[i].Insert(object, objectPos, objectSize,
+							depthLeft - 1, maxSize);
 					}
 				}
 				else { // currently a leaf node , can just expand
@@ -63,7 +64,8 @@ namespace NCL {
 							for (const auto& i : contents) {
 								for (int j = 0; j < 4; ++j) {
 									auto entry = i;
-									children[j].Insert(entry.object, entry.pos, entry.size, depthLeft - 1, maxSize);
+									children[j].Insert(entry.object, entry.pos,
+										entry.size, depthLeft - 1, maxSize);
 								}
 							}
 							contents.clear(); // contents now distributed!
@@ -75,10 +77,14 @@ namespace NCL {
 			void Split() {
 				Vector2 halfSize = size / 2.0f;
 				children = new QuadTreeNode <T >[4];
-				children[0] = QuadTreeNode <T>(position + Vector2(-halfSize.x, halfSize.y), halfSize);
-				children[1] = QuadTreeNode <T>(position + Vector2(halfSize.x, halfSize.y), halfSize);
-				children[2] = QuadTreeNode <T>(position + Vector2(-halfSize.x, -halfSize.y), halfSize);
-				children[3] = QuadTreeNode <T>(position + Vector2(halfSize.x, -halfSize.y), halfSize);
+				children[0] = QuadTreeNode <T>(position +
+					Vector2(-halfSize.x, halfSize.y), halfSize);
+				children[1] = QuadTreeNode <T>(position +
+					Vector2(halfSize.x, halfSize.y), halfSize);
+				children[2] = QuadTreeNode <T>(position +
+					Vector2(-halfSize.x, -halfSize.y), halfSize);
+				children[3] = QuadTreeNode <T>(position +
+					Vector2(halfSize.x, -halfSize.y), halfSize);
 			}
 
 			void DebugDraw() {
@@ -117,10 +123,10 @@ namespace NCL {
 		class QuadTree
 		{
 		public:
-			QuadTree(Vector2 size, int maxDepth = 6, int maxSize = 5){
+			QuadTree(Vector2 size, int maxDepth = 6, int maxSize = 100) {
 				root = QuadTreeNode<T>(Vector2(), size);
-				this->maxDepth	= maxDepth;
-				this->maxSize	= maxSize;
+				this->maxDepth = maxDepth;
+				this->maxSize = maxSize;
 			}
 			~QuadTree() {
 			}

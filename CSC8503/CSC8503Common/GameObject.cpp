@@ -53,6 +53,11 @@ void GameObject::InitObjType() {
 	case GameObjectType::_BUTTON_SPRING:
 		this->GetRenderObject()->SetColour(Vector4(1, 1, 0, 1));
 		this->GetPhysicsObject()->SetElasticity(0.5);
+		break;
+	case GameObjectType::_COIN:
+		this->GetRenderObject()->SetColour(Vector4(1, 1, 0, 1));
+		this->GetPhysicsObject()->SetElasticity(0);
+		break;
 	case GameObjectType::_FLOOR:
 		this->GetRenderObject()->SetColour(Vector4(1, 0, 0, 1));
 		this->GetPhysicsObject()->SetElasticity(0.5);

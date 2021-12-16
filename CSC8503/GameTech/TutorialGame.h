@@ -40,7 +40,7 @@ namespace NCL {
 			void LockedObjectMovement();
 
 			GameObject* AddFloorToWorld(const Vector3& position);
-			GameObject* AddSphereToWorld(const Vector3& position, float radius, float inverseMass = 10.0f);
+			GameObject* AddSphereToWorld(const Vector3& position, float radius, float inverseMass = 10.0f, GameObjectType type = GameObjectType::_NULL);
 			GameObject* AddCubeToWorld(const Vector3& position, Vector3 dimensions, Quaternion& orientation = Quaternion(0,0,0,0),
 				float inverseMass = 10.0f, GameObjectType type = GameObjectType::_NULL);
 			GameObject* AddCapsuleToWorld(const Vector3& position, float halfheight, float radius, Quaternion& orientation = Quaternion(0, 0, 0, 0),
@@ -70,12 +70,14 @@ namespace NCL {
 			bool		debugMenu;
 			bool		debugObject;
 			bool		finished;
+			bool		addScore;
 
 			float		forceMagnitude;
 			float		timer;
 			int			score;
 
 			GameObject* selectionObject = nullptr;
+			std::vector<GameObject*> coins;
 			std::vector<SMPushBlock*> vSprings;
 
 			OGLMesh*	capsuleMesh = nullptr;

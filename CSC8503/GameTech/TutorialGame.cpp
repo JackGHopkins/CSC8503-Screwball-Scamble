@@ -346,15 +346,15 @@ void TutorialGame::InitGamemode1(){
 	AddCubeToWorld(Vector3(3, 2, 13), Vector3(17, 4, 1), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
 	AddCubeToWorld(Vector3(-18, 4, 17.36), Vector3(2, 2, 1), Quaternion(0, -0.414, 0, 1), 0, GameObjectType::_WALL);// Tilted Corner
 
-	AddCubeToWorld(Vector3(19, 2, -3), Vector3(1, 4, 15), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
-	AddCubeToWorld(Vector3(-19, 2, 15), Vector3(1, 4, 3), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
+	AddCubeToWorld(Vector3(19, 2, -3), Vector3(1, 8, 15), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
+	AddCubeToWorld(Vector3(6.5, 2, -5), Vector3(2.5, 8, 13), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
 	AddCubeToWorld(Vector3(12, 2, -19), Vector3(8,8, 1), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
 
 	AddCubeToWorld(Vector3(-11.3334, 4, 11.9), Vector3(2, 2, 1), Quaternion(0, 0.268, 0, 1), 0, GameObjectType::_WALL); // Tilted Corner
 	AddCubeToWorld(Vector3(-7, 2, 11), Vector3(3, 4, 1), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
 	AddCubeToWorld(Vector3(8, 2, 11), Vector3(4, 4, 1), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
 
-	AddCubeToWorld(Vector3(6.5, 2, -5), Vector3(2.5, 4, 13), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
+	AddCubeToWorld(Vector3(-19, 2, 15), Vector3(1, 4, 3), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
 	AddCubeToWorld(Vector3(10.5, 2, 6), Vector3(1.5, 4, 2), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
 	AddCubeToWorld(Vector3(-12, 2, 7), Vector3(8, 6, 1), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
 
@@ -379,6 +379,9 @@ void TutorialGame::InitGamemode1(){
 	// Button
 	AddCubeToWorld(Vector3(-16, 2, -16), Vector3(2, 1, 2), Quaternion(0,0,0,1), 0, GameObjectType::_BUTTON_SPRING);
 
+	// Coins
+	coins.emplace_back(AddSphereToWorld(Vector3(-12, 4, 16), 1.0f, 1.0f, GameObjectType::_COIN));
+	coins.emplace_back(AddSphereToWorld(Vector3(10, 4, 9), 1.0f, 1.0f, GameObjectType::_COIN));
 }
 
 //void TutorialGame::BridgeConstraintTest() {
@@ -441,7 +444,7 @@ rigid body representation. This and the cube function will let you build a lot o
 physics worlds. You'll probably need another function for the creation of OBB cubes too.
 
 */
-GameObject* TutorialGame::AddSphereToWorld(const Vector3& position, float radius, float inverseMass) {
+GameObject* TutorialGame::AddSphereToWorld(const Vector3& position, float radius, float inverseMass, GameObjectType type) {
 	GameObject* sphere = new GameObject();
 	std::string name = "sphere";
 	sphere->SetName(name);
@@ -454,11 +457,15 @@ GameObject* TutorialGame::AddSphereToWorld(const Vector3& position, float radius
 		.SetScale(sphereSize)
 		.SetPosition(position);
 
+	sphere->gOType = type;
+
 	sphere->SetRenderObject(new RenderObject(&sphere->GetTransform(), sphereMesh, basicTex, basicShader));
 	sphere->SetPhysicsObject(new PhysicsObject(&sphere->GetTransform(), sphere->GetBoundingVolume()));
 
 	sphere->GetPhysicsObject()->SetInverseMass(inverseMass);
 	sphere->GetPhysicsObject()->InitSphereInertia();
+
+	sphere->InitObjType();
 
 	world->AddGameObject(sphere);
 
@@ -822,6 +829,15 @@ void TutorialGame::UpdateObjectState(float dt) {
 		}
 		if (ball->gOType == GameObjectType::_GOAL) {
 			finished = true;
+		}
+	}
+	for (int i = 0; i < coins.size(); i++) {
+		if (coins[i]->gOType == GameObjectType::_COIN_COLLECTED) {
+			score++;
+			coins[i]->gOType = GameObjectType::_COIN;
+			coins[i]->GetPhysicsObject()->SetLinearVelocity(Vector3(0, 0, 0));
+			coins[i]->GetTransform().SetPosition(Vector3(-12, 2, -4 + (3*score)));
+			coins.erase(coins.begin() + i);
 		}
 	}
 }

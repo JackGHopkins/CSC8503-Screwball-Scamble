@@ -116,30 +116,30 @@ void PhysicsSystem::Update(float dt) {
 
 	ClearForces();	//Once we've finished with the forces, reset them to zero
 
-	UpdateCollisionList(); //Remove any old collisions
+UpdateCollisionList(); //Remove any old collisions
 
-	t.Tick();
-	float updateTime = t.GetTimeDeltaSeconds();
+t.Tick();
+float updateTime = t.GetTimeDeltaSeconds();
 
-	//Uh oh, physics is taking too long...
-	if (updateTime > realDT) {
-		realHZ /= 2;
-		realDT *= 2;
-		std::cout << "Dropping iteration count due to long physics time...(now " << realHZ << ")\n";
+//Uh oh, physics is taking too long...
+if (updateTime > realDT) {
+	realHZ /= 2;
+	realDT *= 2;
+	std::cout << "Dropping iteration count due to long physics time...(now " << realHZ << ")\n";
+}
+else if (dt * 2 < realDT) { //we have plenty of room to increase iteration count!
+	int temp = realHZ;
+	realHZ *= 2;
+	realDT /= 2;
+
+	if (realHZ > idealHZ) {
+		realHZ = idealHZ;
+		realDT = idealDT;
 	}
-	else if(dt*2 < realDT) { //we have plenty of room to increase iteration count!
-		int temp = realHZ;
-		realHZ *= 2;
-		realDT /= 2;
-
-		if (realHZ > idealHZ) {
-			realHZ = idealHZ;
-			realDT = idealDT;
-		}
-		if (temp != realHZ) {
-			std::cout << "Raising iteration count due to short physics time...(now " << realHZ << ")\n";
-		}
+	if (temp != realHZ) {
+		std::cout << "Raising iteration count due to short physics time...(now " << realHZ << ")\n";
 	}
+}
 }
 
 /*
@@ -150,7 +150,7 @@ The first time they are added, we tell the objects they are colliding.
 The frame they are to be removed, we tell them they're no longer colliding.
 
 From this simple mechanism, we we build up gameplay interactions inside the
-OnCollisionBegin / OnCollisionEnd functions (removing health when hit by a 
+OnCollisionBegin / OnCollisionEnd functions (removing health when hit by a
 rocket launcher, gaining a point when the player hits the gold coin, and so on).
 */
 void PhysicsSystem::UpdateCollisionList() {
@@ -183,7 +183,7 @@ void PhysicsSystem::UpdateObjectAABBs() {
 /*
 
 This is how we'll be doing collision detection in tutorial 4.
-We step thorugh every pair of objects once (the inner for loop offset 
+We step thorugh every pair of objects once (the inner for loop offset
 ensures this), and determine whether they collide, and if so, add them
 to the collision set for later processing. The set will guarantee that
 a particular pair will only be added once, so objects colliding for
@@ -215,6 +215,14 @@ void PhysicsSystem::BasicCollisionDetection() {
 				if ((*i)->gOType == GameObjectType::_GOAL || (*j)->gOType == GameObjectType::_GOAL) {
 					(*i)->gOType = GameObjectType::_GOAL;
 					(*j)->gOType = GameObjectType::_GOAL;
+				}
+				if ((*j)->gOType == GameObjectType::_NULL && (*i)->gOType == GameObjectType::_COIN) {
+					(*i)->gOType = GameObjectType::_COIN_COLLECTED;
+					continue;
+				}
+				if ((*j)->gOType == GameObjectType::_COIN && (*i)->gOType == GameObjectType::_NULL) {
+					(*j)->gOType = GameObjectType::_COIN_COLLECTED;
+					continue;
 				}
 				std::cout << "Collision between " << (*i)->GetName() << " and " << (*j)->GetName() << std::endl;
 				ImpulseResolveCollision(*info.a, *info.b, info.point);

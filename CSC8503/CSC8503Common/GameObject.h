@@ -14,15 +14,17 @@ namespace NCL {
 		enum class GameObjectType
 		{
 			_NULL = 0,
-			_SPRING = 1,
-			_SLIME = 2,
-			_RESET = 3,
-			_RAMP = 4,
-			_FLOOR = 5,
-			_WALL = 6,
-			_LOG = 7,
+			_SPRING,
+			_SLIME,
+			_RESET,
+			_RAMP,
+			_FLOOR,
+			_WALL,
+			_LOG,
 			_BUTTON_SPRING,
-			_GOAL
+			_GOAL,
+			_COIN,
+			_COIN_COLLECTED
 		};
 
 		class GameObject	{

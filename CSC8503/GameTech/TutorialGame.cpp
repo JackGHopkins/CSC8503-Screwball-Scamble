@@ -16,10 +16,12 @@ TutorialGame::TutorialGame()	{
 
 	forceMagnitude	= 10.0f;
 	useGravity		= false;
-	inSelectionMode = false;
+	inSelectionMode = true;
 	debugMenu		= false;
 	debugObject		= false;
+	finished		= false;
 	timer			= 0.0f;
+	score			= 0;
 
 	Debug::SetRenderer(renderer);
 
@@ -72,8 +74,15 @@ TutorialGame::~TutorialGame()	{
 }
 
 void TutorialGame::UpdateGame(float dt) {
-	timer += dt;
+	if (!finished)
+		timer += dt;
 	renderer->DrawString("Time:" + std::to_string(round(int(timer * 100)) / 100), Vector2(70, 5));
+	renderer->DrawString("Score:" + std::to_string(round(score)), Vector2(70, 10));
+
+	if (finished) {
+		world->ClearForces();
+		useGravity = false;
+	}
 
 	if (!inSelectionMode) {
 		world->GetMainCamera()->UpdateCamera(dt);
@@ -124,7 +133,7 @@ void TutorialGame::UpdateGame(float dt) {
 			i->Update(dt);
 	}
 
-	UpdateResetObjects(dt);
+	UpdateObjectState(dt);
 	
 	world->UpdateWorld(dt);
 	renderer->Update(dt);
@@ -178,10 +187,15 @@ void TutorialGame::UpdateKeys(float dt) {
 		DebugObjectMovement();
 	}
 
-	// Reset Ball
+	// Reset 
 	if (Window::GetKeyboard()->KeyPressed(NCL::KeyboardKeys::R)) {
 		ball->GetPhysicsObject()->SetLinearVelocity(Vector3(0, 0, 0));
 		ball->GetTransform().SetPosition(Vector3(16, 2, 16));
+		world->GetMainCamera()->SetNearPlane(0.1f);
+		world->GetMainCamera()->SetFarPlane(500.0f);
+		world->GetMainCamera()->SetPitch(-90.0f);
+		world->GetMainCamera()->SetYaw(0.0f);
+		world->GetMainCamera()->SetPosition(Vector3(-0, 65, 0));
 	}
 
 	if (Window::GetKeyboard()->KeyPressed(NCL::KeyboardKeys::M)) {
@@ -322,7 +336,9 @@ void TutorialGame::InitGamemode1(){
 	AddCubeToWorld(Vector3(-15, 2, 13), Vector3(5, 1, 5), Quaternion(0, 0, 0, 1), 0, GameObjectType::_FLOOR);
 	AddCubeToWorld(Vector3(0, 1, 9), Vector3(11, 1, 1), Quaternion(0, 0, 0, 1), 0, GameObjectType::_FLOOR);
 	AddCubeToWorld(Vector3(14, 1, 9), Vector3(4, 1, 3), Quaternion(0, 0, 0, 1), 0, GameObjectType::_FLOOR);
-	AddCubeToWorld(Vector3(13.5, 3, -16), Vector3(4.5, 1, 2), Quaternion(0, 0, 0, 1), 0, GameObjectType::_FLOOR);
+
+	// GOAL
+	AddCubeToWorld(Vector3(13.5, 3, -16), Vector3(4.5, 1, 2), Quaternion(0, 0, 0, 1), 0, GameObjectType::_GOAL);
 
 
 	// Walls
@@ -332,7 +348,7 @@ void TutorialGame::InitGamemode1(){
 
 	AddCubeToWorld(Vector3(19, 2, -3), Vector3(1, 4, 15), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
 	AddCubeToWorld(Vector3(-19, 2, 15), Vector3(1, 4, 3), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
-	AddCubeToWorld(Vector3(12, 2, -19), Vector3(8, 4, 1), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
+	AddCubeToWorld(Vector3(12, 2, -19), Vector3(8,8, 1), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
 
 	AddCubeToWorld(Vector3(-11.3334, 4, 11.9), Vector3(2, 2, 1), Quaternion(0, 0.268, 0, 1), 0, GameObjectType::_WALL); // Tilted Corner
 	AddCubeToWorld(Vector3(-7, 2, 11), Vector3(3, 4, 1), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
@@ -790,7 +806,7 @@ bool TutorialGame::SelectObject(float dt) {
 	return false;
 }
 
-void TutorialGame::UpdateResetObjects(float dt) {
+void TutorialGame::UpdateObjectState(float dt) {
 	if (fallingLog) {
 		if (fallingLog->gOType == GameObjectType::_RESET) {
 			fallingLog->GetPhysicsObject()->SetLinearVelocity(Vector3(0,0,0));
@@ -803,6 +819,9 @@ void TutorialGame::UpdateResetObjects(float dt) {
 			ball->GetPhysicsObject()->SetLinearVelocity(Vector3(0, 0, 0));
 			ball->GetTransform().SetPosition(Vector3(16, 2, 16));
 			ball->gOType = GameObjectType::_NULL;
+		}
+		if (ball->gOType == GameObjectType::_GOAL) {
+			finished = true;
 		}
 	}
 }

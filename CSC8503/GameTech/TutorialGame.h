@@ -18,7 +18,7 @@ namespace NCL {
 
 			void InitCamera();
 			void UpdateKeys(float dt);
-			void UpdateResetObjects(float dt);
+			void UpdateObjectState(float dt);
 
 			void InitWorld();
 
@@ -69,9 +69,11 @@ namespace NCL {
 			bool		inSelectionMode;
 			bool		debugMenu;
 			bool		debugObject;
+			bool		finished;
 
 			float		forceMagnitude;
 			float		timer;
+			int			score;
 
 			GameObject* selectionObject = nullptr;
 			std::vector<SMPushBlock*> vSprings;

@@ -21,8 +21,8 @@ namespace NCL {
 			_FLOOR = 5,
 			_WALL = 6,
 			_LOG = 7,
-			_BUTTON_SPRING
-
+			_BUTTON_SPRING,
+			_GOAL
 		};
 
 		class GameObject	{

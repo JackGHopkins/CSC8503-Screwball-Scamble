@@ -34,6 +34,13 @@ void GameWorld::ClearAndErase() {
 	Clear();
 }
 
+void GameWorld::ClearForces() {
+	for (auto& i : gameObjects) {
+		i->GetPhysicsObject()->ClearForces();
+		i->GetPhysicsObject()->SetLinearVelocity(Vector3(0,0,0));
+	}
+}
+
 void GameWorld::AddGameObject(GameObject* o) {
 	gameObjects.emplace_back(o);
 	o->SetWorldID(worldIDCounter++);

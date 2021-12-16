@@ -212,6 +212,10 @@ void PhysicsSystem::BasicCollisionDetection() {
 					(*i)->gOType = GameObjectType::_RESET;
 					(*j)->gOType = GameObjectType::_RESET;
 				}
+				if ((*i)->gOType == GameObjectType::_GOAL || (*j)->gOType == GameObjectType::_GOAL) {
+					(*i)->gOType = GameObjectType::_GOAL;
+					(*j)->gOType = GameObjectType::_GOAL;
+				}
 				std::cout << "Collision between " << (*i)->GetName() << " and " << (*j)->GetName() << std::endl;
 				ImpulseResolveCollision(*info.a, *info.b, info.point);
 				info.framesLeft = numCollisionFrames;

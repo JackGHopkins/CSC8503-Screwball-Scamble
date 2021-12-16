@@ -20,6 +20,7 @@ namespace NCL {
 
 			void Clear();
 			void ClearAndErase();
+			void ClearForces();
 
 			void AddGameObject(GameObject* o);
 			void RemoveGameObject(GameObject* o, bool andDelete = false);
@@ -52,6 +53,7 @@ namespace NCL {
 			void GetConstraintIterators(
 				std::vector<Constraint*>::const_iterator& first,
 				std::vector<Constraint*>::const_iterator& last) const;
+
 
 			bool GetBroadphaseAABB(Vector3& outsize) const;
 			void UpdateBroadphaseAABB();

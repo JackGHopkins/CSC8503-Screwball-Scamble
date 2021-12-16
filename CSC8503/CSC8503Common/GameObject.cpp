@@ -57,6 +57,10 @@ void GameObject::InitObjType() {
 		this->GetRenderObject()->SetColour(Vector4(1, 0, 0, 1));
 		this->GetPhysicsObject()->SetElasticity(0.5);
 		break;
+	case GameObjectType::_GOAL:
+		this->GetRenderObject()->SetColour(Vector4(0, 1, 1, 1));
+		this->GetPhysicsObject()->SetElasticity(0.1);
+		break;
 	case GameObjectType::_LOG:
 		this->GetRenderObject()->SetColour(Vector4(0.5, 0.2, 0, 1));
 		this->GetPhysicsObject()->SetElasticity(0.5);
@@ -78,7 +82,7 @@ void GameObject::InitObjType() {
 		this->GetPhysicsObject()->SetElasticity(0.8);
 		break;
 	case GameObjectType::_WALL:
-		this->GetRenderObject()->SetColour(Vector4(0, 0, 1, 1));
+		this->GetRenderObject()->SetColour(Vector4(0.05, 0.05, 1, 1));
 		this->GetPhysicsObject()->SetElasticity(0.5);
 		break;
 	default:

@@ -273,7 +273,7 @@ void PhysicsSystem::ImpulseResolveCollision(GameObject& a, GameObject& b, Collis
 	Vector3 inertiaB = Vector3::Cross(physB->GetInertiaTensor() * Vector3::Cross(relativeB, p.normal), relativeB);
 	float angularEffect = Vector3::Dot(inertiaA + inertiaB, p.normal);
 	
-	float cRestitution = a.GetPhysicsObject()->GetElasticity() * b.GetPhysicsObject()->GetElasticity(); // disperse some kinectic energy
+	float cRestitution = physA->GetElasticity() * physB->GetElasticity(); // disperse some kinectic energy
 	
 	float j = (-(1.0f + cRestitution) * impulseForce) /(totalMass + angularEffect);
 	Vector3 fullImpulse = p.normal * j;
@@ -284,6 +284,19 @@ void PhysicsSystem::ImpulseResolveCollision(GameObject& a, GameObject& b, Collis
 	physA->ApplyAngularImpulse(Vector3::Cross(relativeA, -fullImpulse));
 	
 	physB->ApplyAngularImpulse(Vector3::Cross(relativeB, fullImpulse));
+
+	Vector3 t = contactVelocity - (p.normal * (Vector3::Dot(contactVelocity, p.normal)));
+	float cFriction = (physA->GetFriction() * physB->GetFriction());
+	Vector3 tNormal = t.Normalised();
+
+	Vector3 frictionA = Vector3::Cross(physA->GetInertiaTensor() * Vector3::Cross(relativeA, tNormal), relativeA);
+	Vector3 frictionB = Vector3::Cross(physB->GetInertiaTensor() * Vector3::Cross(relativeB, tNormal), relativeB);
+
+	float j_Friction = (-(cFriction * (Vector3::Dot(contactVelocity, tNormal)))) / (totalMass + Vector3::Dot(frictionA + frictionB, tNormal));
+	Vector3 frictionImpulse = tNormal * j_Friction;
+
+	physA->ApplyAngularImpulse(Vector3::Cross(relativeA, -frictionImpulse));
+	physB->ApplyAngularImpulse(Vector3::Cross(relativeB, frictionImpulse));
 }
 
 /*
@@ -297,7 +310,7 @@ compare the collisions that we absolutely need to.
 
 void PhysicsSystem::BroadPhase() {
 	broadphaseCollisions.clear();
-	QuadTree <GameObject*> tree(Vector2(1024, 1024), 7, gameWorld.GetGameObjects().size() + 1);
+	QuadTree <GameObject*> tree(Vector2(1024, 1024), 7, 6);
 
 	std::vector <GameObject*>::const_iterator first;
 	std::vector <GameObject*>::const_iterator last;
@@ -309,28 +322,16 @@ void PhysicsSystem::BroadPhase() {
 		}
 		Vector3 pos = (*i)->GetTransform().GetPosition();
 		if ((*i)->GetBoundingVolume()->type == VolumeType::Capsule) {
-			//std::cout << "here we are 1" << std::endl;				// The reason for this commented out code is to display why my Quad Tree library issue if needed. I spent 50mins with Giacomo. The error is not the fault of my code.
 			tree.Insert(*i, pos, halfSizes);
 		} else
 
 			tree.Insert(*i, pos, halfSizes);
 	}
-	/*std::set<size_t> items;
-	tree.OperateOnContents(
-		[&](std::list <QuadTreeEntry <GameObject*>>& data) {
-			for (auto i = data.begin(); i != data.end(); ++i)
-				items.insert((size_t)i->object->GetBoundingVolume()->type);
-		});
-	for (size_t x : items)
-		std::cout << x << ", ";
-	std::cout << std::endl; */
+
 	tree.OperateOnContents(
 		[&](std::list <QuadTreeEntry <GameObject*>>& data) {
 			CollisionDetection::CollisionInfo info;
 			for (auto i = data.begin(); i != data.end(); ++i) {
-				if (i->object->GetBoundingVolume()->type == VolumeType::Capsule) {
-					//std::cout << "here we are " << std::endl;
-				}
 				for (auto j = std::next(i); j != data.end(); ++j) {
 					//is this pair of items already in the collision set -
 					//if the same pair is in another quadtree node together etc
@@ -339,11 +340,6 @@ void PhysicsSystem::BroadPhase() {
 					broadphaseCollisions.insert(info);
 				}
 			}
-			/*if ((data.size() == 1)) {
-				std::cout <<
-					(size_t)data.begin()->object->GetBoundingVolume()->type
-					<< std::endl;
-			}*/
 		});
 	tree.DebugDraw();
 }

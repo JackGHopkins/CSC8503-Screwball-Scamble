@@ -46,6 +46,14 @@ namespace NCL {
 			void SetElasticity(float elas) {
 				elasticity = elas;
 			}
+			
+			float GetFriction() const {
+				return friction;
+			}	
+			
+			void SetFriction(float fric) {
+				friction = fric;
+			}
 
 			void ApplyAngularImpulse(const Vector3& force);
 			void ApplyLinearImpulse(const Vector3& force);

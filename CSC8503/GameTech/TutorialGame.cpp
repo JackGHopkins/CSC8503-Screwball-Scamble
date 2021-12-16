@@ -331,7 +331,7 @@ void TutorialGame::InitGamemode1(){
 	ball = AddSphereToWorld(Vector3(16, 2, 16), 0.5f, 1.0f);
 
 	// Log
-	fallingLog = AddCapsuleToWorld(Vector3(0, 12, 0), 2.0f, 0.4f, Quaternion::EulerAnglesToQuaternion(0.0f, 0.0f, 90.0f), 0.001f);
+	fallingLog = AddCapsuleToWorld(Vector3(0, 20, 0), 2.0f, 0.4f, Quaternion::EulerAnglesToQuaternion(0.0f, 0.0f, 90.0f), 0.001f, GameObjectType::_LOG);
 
 	// Reset Collider
 	AddCubeToWorld(Vector3(0, -5, 0), Vector3(20, 0.5, 20), Quaternion(0, 0, 0, 1), 0, GameObjectType::_RESET);
@@ -372,7 +372,7 @@ void TutorialGame::InitGamemode1(){
 
 	// Ramps
 	AddCubeToWorld(Vector3(0, 1, 16), Vector3(11, 1, 2), Quaternion::EulerAnglesToQuaternion(0.0f, 0.0f, -5.8f), 0, GameObjectType::_RAMP);
-	AddCubeToWorld(Vector3(0, 6, 2), Vector3(4, 1, 6.5), Quaternion(0.315, 0, 0, 1), 0, GameObjectType::_RAMP);
+	AddCubeToWorld(Vector3(0, 7, 2), Vector3(4, 1, 6.5), Quaternion(0.315, 0, 0, 1), 0, GameObjectType::_RAMP);
 	AddCubeToWorld(Vector3(13.5, 3.5, 0), Vector3(4.5, 1, 6.5), Quaternion(0.12, 0, 0, 1), 0, GameObjectType::_RAMP);
 
 	// Slime
@@ -387,7 +387,6 @@ void TutorialGame::InitGamemode1(){
 	coins.emplace_back(AddSphereToWorld(Vector3(-12, 4, 16), 1.0f, 1.0f, GameObjectType::_COIN));
 	coins.emplace_back(AddSphereToWorld(Vector3(10, 4, 9), 1.0f, 1.0f, GameObjectType::_COIN));
 	coins.emplace_back(AddSphereToWorld(Vector3(-14, 4, 9), 1.0f, 1.0f, GameObjectType::_COIN));
-	coins.emplace_back(AddSphereToWorld(Vector3(3, 10, 0), 0.5f, 0.0f, GameObjectType::_COIN));
 }
 
 //void TutorialGame::BridgeConstraintTest() {
@@ -823,7 +822,7 @@ void TutorialGame::UpdateObjectState(float dt) {
 	if (fallingLog) {
 		if (fallingLog->gOType == GameObjectType::_RESET) {
 			fallingLog->GetPhysicsObject()->SetLinearVelocity(Vector3(0,0,0));
-			fallingLog->GetTransform().SetPosition(Vector3(0,12,0));
+			fallingLog->GetTransform().SetPosition(Vector3(0,20,0));
 			fallingLog->gOType = GameObjectType::_LOG;
 		}
 	}
@@ -839,6 +838,7 @@ void TutorialGame::UpdateObjectState(float dt) {
 	}
 	for (int i = 0; i < coins.size(); i++) {
 		if (coins[i]->gOType == GameObjectType::_COIN_COLLECTED) {
+			PlaySound(TEXT("../../Assets/Audio/coin.wav"), NULL, SND_ASYNC);
 			score++;
 			coins[i]->gOType = GameObjectType::_COIN;
 			coins[i]->GetPhysicsObject()->SetLinearVelocity(Vector3(0, 0, 0));

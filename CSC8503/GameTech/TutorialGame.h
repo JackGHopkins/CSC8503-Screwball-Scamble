@@ -65,12 +65,13 @@ namespace NCL {
 			PhysicsSystem*		physics;
 			GameWorld*			world;
 
-			bool useGravity;
-			bool inSelectionMode;
-			bool debugMenu;
-			bool debugObject;
+			bool		useGravity;
+			bool		inSelectionMode;
+			bool		debugMenu;
+			bool		debugObject;
 
 			float		forceMagnitude;
+			float		timer;
 
 			GameObject* selectionObject = nullptr;
 			std::vector<SMPushBlock*> vSprings;

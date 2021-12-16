@@ -19,6 +19,7 @@ TutorialGame::TutorialGame()	{
 	inSelectionMode = false;
 	debugMenu		= false;
 	debugObject		= false;
+	timer			= 0.0f;
 
 	Debug::SetRenderer(renderer);
 
@@ -71,6 +72,9 @@ TutorialGame::~TutorialGame()	{
 }
 
 void TutorialGame::UpdateGame(float dt) {
+	timer += dt;
+	renderer->DrawString("Time:" + std::to_string(round(int(timer * 100)) / 100), Vector2(70, 5));
+
 	if (!inSelectionMode) {
 		world->GetMainCamera()->UpdateCamera(dt);
 	}

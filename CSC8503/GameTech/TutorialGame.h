@@ -1,7 +1,7 @@
 #pragma once
 #include "GameTechRenderer.h"
 #include "../CSC8503Common/PhysicsSystem.h"
-#include "../CSC8503Common/StateGameObject.h"
+#include "../CSC8503Common/StateAIObject.h"
 #include "../CSC8503Common/SMPushBlock.h"
 
 namespace NCL {
@@ -54,6 +54,7 @@ namespace NCL {
 			void InitGamemode1();
 			void InitGamemode2();
 			void BridgeConstraintTest();
+			void MoveBall();
 	
 			bool SelectObject(float dt);
 			void MoveSelectedObject();
@@ -77,11 +78,11 @@ namespace NCL {
 			GameObject* AddPlayerToWorld(const Vector3& position);
 			GameObject* AddEnemyToWorld(const Vector3& position);
 			GameObject* AddBonusToWorld(const Vector3& position);
-			StateGameObject* AddStateObjectToWorld(const Vector3& position);
+			StateAIObject* AddStateObjectToWorld(const Vector3& position, GameObjectType type = GameObjectType::_NULL);
 
 			GameObject* fallingLog;
 			GameObject* ball;
-			StateGameObject* testStateObject;
+			StateAIObject* testStateObject;
 
 			GameTechRenderer*	renderer;
 			PhysicsSystem*		physics;
@@ -100,6 +101,7 @@ namespace NCL {
 
 			GameObject* selectionObject = nullptr;
 			std::vector<GameObject*> coins;
+			std::vector<GameObject*> bumpers;
 			std::vector<SMPushBlock*> vSprings;
 
 			OGLMesh*	capsuleMesh = nullptr;

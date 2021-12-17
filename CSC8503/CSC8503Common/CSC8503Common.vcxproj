@@ -161,7 +161,7 @@
     <ClInclude Include="Ray.h" />
     <ClInclude Include="RenderObject.h" />
     <ClInclude Include="State.h" />
-    <ClInclude Include="StateGameObject.h" />
+    <ClInclude Include="StateAIObject.h" />
     <ClInclude Include="StateMachine.h" />
     <ClInclude Include="StateTransition.h" />
     <ClInclude Include="Transform.h" />
@@ -182,7 +182,7 @@
     <ClCompile Include="PushdownState.cpp" />
     <ClCompile Include="QuadTree.cpp" />
     <ClCompile Include="RenderObject.cpp" />
-    <ClCompile Include="StateGameObject.cpp" />
+    <ClCompile Include="StateAIObject.cpp" />
     <ClCompile Include="StateMachine.cpp" />
     <ClCompile Include="StateTransition.cpp" />
     <ClCompile Include="Transform.cpp" />

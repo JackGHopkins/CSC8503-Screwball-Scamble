@@ -15,7 +15,7 @@ TutorialGame::TutorialGame(bool gm1)	{
 	physics		= new PhysicsSystem(*world);
 
 	forceMagnitude	= 10.0f;
-	useGravity		= false;
+	useGravity		= true;
 	inSelectionMode = true;
 	debugMenu		= false;
 	debugObject		= false;
@@ -38,17 +38,23 @@ void TutorialGame::ResetRenderer() {
 
 void NCL::CSC8503::TutorialGame::PrintPause()
 {
+	renderer->DrawString("Time:" + std::to_string(round(int(timer * 100)) / 100), Vector2(70, 5));
+	renderer->DrawString("Score:" + std::to_string(round(score)), Vector2(70, 10));
 	renderer->DrawString("Game: PAUSED", Vector2(10, 10));
 }
 
 void NCL::CSC8503::TutorialGame::PrintWin()
 {
+	renderer->DrawString("Time:" + std::to_string(round(int(timer * 100)) / 100), Vector2(70, 5));
+	renderer->DrawString("Score:" + std::to_string(round(score)), Vector2(70, 10));
 	renderer->DrawString("Game: WON", Vector2(10, 10));
 	renderer->DrawString("Press '0' to Quit", Vector2(10, 20));;
 }
 
 void NCL::CSC8503::TutorialGame::PrintLose()
 {
+	renderer->DrawString("Time:" + std::to_string(round(int(timer * 100)) / 100), Vector2(70, 5));
+	renderer->DrawString("Score:" + std::to_string(round(score)), Vector2(70, 10));
 	renderer->DrawString("Game: LOSE", Vector2(10, 10));
 	renderer->DrawString("Press '0' to Quit", Vector2(10, 20));;
 }
@@ -99,7 +105,6 @@ TutorialGame::~TutorialGame()	{
 }
 
 void TutorialGame::UpdateGame(float dt) {
-
 	if (finished) {
 		world->ClearForces();
 		for (auto i : world->GetGameObjects()) {
@@ -157,6 +162,14 @@ void TutorialGame::UpdateGame(float dt) {
 
 	if (debugObject)
 		DebugObject();
+
+	if (gMode == Gamemode::_GM2) {
+		MoveBall();
+		if (coins.empty()) {
+			finished = true;
+			fState = (score > 0) ? FinishState::_WIN : FinishState::_LOSE;
+		}
+	}
 
 	for (auto i : vSprings) {
 		if (i)
@@ -280,8 +293,9 @@ void TutorialGame::LockedObjectMovement() {
 }
 
 void TutorialGame::DebugObjectMovement() {
+
 //If we've selected an object, we can manipulate it with some key presses
-	if (inSelectionMode && selectionObject) {
+	if ((inSelectionMode && selectionObject) || (gMode == Gamemode::_GM2 && ball == selectionObject)) {
 		//Twist the selected object!
 		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::NUM7)) {
 			selectionObject->GetPhysicsObject()->AddTorque(Vector3(0, 10, 0));
@@ -316,7 +330,25 @@ void TutorialGame::DebugObjectMovement() {
 			selectionObject->GetPhysicsObject()->AddForce(Vector3(-10, 0, 0));
 		}
 	}
+}
 
+void TutorialGame::MoveBall() {
+	//Movement
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::RIGHT)) {
+		ball->GetPhysicsObject()->AddForce(Vector3(10, 0, 0));
+	}
+
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::UP)) {
+		ball->GetPhysicsObject()->AddForce(Vector3(0, 0, -10));
+	}
+
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::DOWN)) {
+		ball->GetPhysicsObject()->AddForce(Vector3(0, 0, 10));
+	}
+
+	if (Window::GetKeyboard()->KeyDown(KeyboardKeys::LEFT)) {
+		ball->GetPhysicsObject()->AddForce(Vector3(-10, 0, 0));
+	}
 }
 
 void TutorialGame::InitCamera() {
@@ -426,7 +458,7 @@ void TutorialGame::InitGamemode1(){
 
 void TutorialGame::InitGamemode2() {
 	// Ball
-	ball = AddSphereToWorld(Vector3(15, 2, 15), 0.5f, 1.0f);
+	ball = AddSphereToWorld(Vector3(15, 2, 15), 0.5f, 1.0f, GameObjectType::_NULL);
 
 	// Base Floor
 	AddCubeToWorld(Vector3(0, 0, 0), Vector3(20, 1, 20), Quaternion(0, 0, 0, 1), 0, GameObjectType::_FLOOR);
@@ -437,15 +469,22 @@ void TutorialGame::InitGamemode2() {
 	AddCubeToWorld(Vector3(0, 0, 19), Vector3(20, 4, 1), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
 	AddCubeToWorld(Vector3(0, 0, -19), Vector3(20, 4, 1), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
 
-	// Inner Walls
-	AddCubeToWorld(Vector3(0, 0, -11), Vector3(10, 4, 1), Quaternion(0, 0, 0, 1), 0, GameObjectType::_SLIME);
-	AddCubeToWorld(Vector3(0, 0, 11), Vector3(10, 4, 1), Quaternion(0, 0, 0, 1), 0, GameObjectType::_SLIME);
-	AddCubeToWorld(Vector3(11, 0, -5), Vector3(1, 4, 7), Quaternion(0, 0, 0, 1), 0, GameObjectType::_SLIME);
-	AddCubeToWorld(Vector3(-11, 0, -5), Vector3(1, 4, 7), Quaternion(0, 0, 0, 1), 0, GameObjectType::_SLIME);
-	AddCubeToWorld(Vector3(0, 0, 5), Vector3(1, 4, 7), Quaternion(0, 0, 0, 1), 0, GameObjectType::_SLIME);
+	// Bumpers
+	//bumpers.emplace_back(AddSphereToWorld(Vector3(0, 0, -11), 2.0f, 0, GameObjectType::_SLIME));
+	//bumpers.emplace_back(AddSphereToWorld(Vector3(0, 0, 11), 2.0f, 0, GameObjectType::_SLIME));
+	bumpers.emplace_back(AddSphereToWorld(Vector3(11, 0, -5), 2.0f, 0, GameObjectType::_SLIME));
+	bumpers.emplace_back(AddSphereToWorld(Vector3(-11, 0, -5), 2.0f, 0, GameObjectType::_SLIME));
+	bumpers.emplace_back(AddSphereToWorld(Vector3(0, 0, 5), 2.0f, 0, GameObjectType::_SLIME));
+
+	// Coins
+	coins.emplace_back(AddSphereToWorld(Vector3(0, 2, -7), 1.0f, 1.0f, GameObjectType::_COIN));
+	coins.emplace_back(AddSphereToWorld(Vector3(-5, 2, 7), 1.0f, 1.0f, GameObjectType::_COIN));
+	coins.emplace_back(AddSphereToWorld(Vector3(5, 2, 7), 1.0f, 1.0f, GameObjectType::_COIN));
+	coins.emplace_back(AddSphereToWorld(Vector3(-15, 2, -15), 1.0f, 1.0f, GameObjectType::_COIN));
+	coins.emplace_back(AddSphereToWorld(Vector3(15, 2, -15), 1.0f, 1.0f, GameObjectType::_COIN));
 
 	// Enemy
-	testStateObject = AddStateObjectToWorld(Vector3(-15, 2, 15));
+	testStateObject = AddStateObjectToWorld(Vector3(-15, 2, 15), GameObjectType::_AI);
 	//AddEnemyToWorld(Vector3(-15, 4, -15));
 }
 
@@ -773,8 +812,8 @@ GameObject* TutorialGame::AddBonusToWorld(const Vector3& position) {
 	return apple;
 }
 
-StateGameObject* TutorialGame::AddStateObjectToWorld(const Vector3& position) {
-	StateGameObject* apple = new StateGameObject();
+StateAIObject* TutorialGame::AddStateObjectToWorld(const Vector3& position, GameObjectType type) {
+	StateAIObject* apple = new StateAIObject();
 
 	SphereVolume* volume = new SphereVolume(1.0f);
 	apple->SetBoundingVolume((CollisionVolume*)volume);
@@ -784,13 +823,17 @@ StateGameObject* TutorialGame::AddStateObjectToWorld(const Vector3& position) {
 
 	apple->SetRenderObject(new RenderObject(&apple->GetTransform(), bonusMesh, nullptr, basicShader));
 	apple->SetPhysicsObject(new PhysicsObject(&apple->GetTransform(), apple->GetBoundingVolume()));
+	apple->gOType = type;
 
 	apple->GetPhysicsObject()->SetInverseMass(1.0f);
 	apple->GetPhysicsObject()->InitSphereInertia();
 
 	apple->targetPos = ball->GetTransform().GetPosition();
+	apple->coins = coins;
+	apple->bumpers = bumpers;
 
 	world->AddGameObject(apple);
+	apple->InitObjType();
 
 	return apple;
 }
@@ -898,15 +941,41 @@ void TutorialGame::UpdateObjectState(float dt) {
 			finished = true;
 			fState = FinishState::_WIN;
 		}
+		if (ball->gOType == GameObjectType::_AI) {
+			finished = true;
+			fState = FinishState::_LOSE;
+		}
+	}
+	if (testStateObject)
+	{
+		if (testStateObject->gOType == GameObjectType::_RESET_AI) {
+			testStateObject->GetPhysicsObject()->SetLinearVelocity(Vector3(0, 0, 0));
+			testStateObject->GetTransform().SetPosition(Vector3(-15, 2, 15));
+			testStateObject->gOType = GameObjectType::_AI;
+		}
 	}
 	for (int i = 0; i < coins.size(); i++) {
-		if (coins[i]->gOType == GameObjectType::_COIN_COLLECTED) {
+		if (coins[i]->gOType == GameObjectType::_COIN_COLLECTED || coins[i]->gOType == GameObjectType::_COIN_COLLECTED_AI) {
 			PlaySound(TEXT("../../Assets/Audio/coin.wav"), NULL, SND_ASYNC);
-			score++;
-			coins[i]->gOType = GameObjectType::_COIN;
+
 			coins[i]->GetPhysicsObject()->SetLinearVelocity(Vector3(0, 0, 0));
-			coins[i]->GetTransform().SetPosition(Vector3(-12, 2, -4 + (3*score)));
-			coins.erase(coins.begin() + i);
+			if (gMode == Gamemode::_GM1) {
+				coins[i]->GetTransform().SetPosition(Vector3(-12, 2, -4 + (3 * score)));
+			}
+			if (gMode == Gamemode::_GM2) {
+				coins[i]->GetTransform().SetPosition(Vector3(-19, 7, -19 + (3 * score)));
+			}
+			if (coins[i]->gOType == GameObjectType::_COIN_COLLECTED_AI) {
+				coins[i]->gOType = GameObjectType::_COIN;
+				coins.erase(coins.begin() + i);
+				score--;
+				testStateObject->coins = coins;
+			}
+			else {
+				coins[i]->gOType = GameObjectType::_COIN;
+				coins.erase(coins.begin() + i);
+				score++;
+			}
 		}
 	}
 }

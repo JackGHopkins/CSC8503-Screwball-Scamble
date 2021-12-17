@@ -25,7 +25,10 @@ namespace NCL {
 			_GOAL,
 			_COIN,
 			_COIN_COLLECTED,
-			_WALL_NO_BOUNCE
+			_COIN_COLLECTED_AI,
+			_WALL_NO_BOUNCE,
+			_AI,
+			_RESET_AI
 		};
 
 		class GameObject	{

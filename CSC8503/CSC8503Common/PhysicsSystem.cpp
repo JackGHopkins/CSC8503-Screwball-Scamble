@@ -21,7 +21,7 @@ and the forces that are added to objects to change those positions
 */
 
 PhysicsSystem::PhysicsSystem(GameWorld& g) : gameWorld(g)	{
-	applyGravity	= false;
+	applyGravity	= true;
 	useBroadPhase	= true;	
 	dTOffset		= 0.0f;
 	globalDamping	= 0.995f;
@@ -223,6 +223,15 @@ void PhysicsSystem::BasicCollisionDetection() {
 					(*j)->gOType = GameObjectType::_COIN_COLLECTED;
 					continue;
 				}
+				if ((info.b)->gOType == GameObjectType::_NULL && (info.a)->gOType == GameObjectType::_AI) {
+					(info.b)->gOType = GameObjectType::_AI;
+					continue;
+				}
+				if ((info.b)->gOType == GameObjectType::_AI && (info.a)->gOType == GameObjectType::_NULL) {
+					(info.a)->gOType = GameObjectType::_AI;
+					continue;
+				}
+
 				std::cout << "Collision between " << (*i)->GetName() << " and " << (*j)->GetName() << std::endl;
 				ImpulseResolveCollision(*info.a, *info.b, info.point);
 				info.framesLeft = numCollisionFrames;
@@ -380,7 +389,30 @@ void PhysicsSystem::NarrowPhase() {
 				(info.b)->gOType = GameObjectType::_COIN_COLLECTED;
 				continue;
 			}
-
+			if ((info.b)->gOType == GameObjectType::_AI && (info.a)->gOType == GameObjectType::_COIN) {
+				(info.a)->gOType = GameObjectType::_COIN_COLLECTED_AI;
+					continue;
+			}
+			if ((info.b)->gOType == GameObjectType::_COIN && (info.a)->gOType == GameObjectType::_AI) {
+				(info.b)->gOType = GameObjectType::_COIN_COLLECTED_AI;
+					continue;
+			}
+			if ((info.b)->gOType == GameObjectType::_NULL && (info.a)->gOType == GameObjectType::_AI) {
+				(info.b)->gOType = GameObjectType::_AI;
+				continue;
+			}
+			if ((info.b)->gOType == GameObjectType::_AI && (info.a)->gOType == GameObjectType::_NULL) {
+				(info.a)->gOType = GameObjectType::_AI;
+				continue;
+			}
+			if ((info.b)->gOType == GameObjectType::_SLIME && (info.a)->gOType == GameObjectType::_AI) {
+				(info.a)->gOType = GameObjectType::_RESET_AI;
+				continue;
+			}
+			if ((info.b)->gOType == GameObjectType::_AI && (info.a)->gOType == GameObjectType::_SLIME) {
+				(info.b)->gOType = GameObjectType::_RESET_AI;
+				continue;
+			}
 
 			info.framesLeft = numCollisionFrames;
 			ImpulseResolveCollision(*info.a, *info.b, info.point);

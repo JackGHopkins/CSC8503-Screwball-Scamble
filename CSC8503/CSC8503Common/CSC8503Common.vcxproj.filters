@@ -117,9 +117,6 @@
     <ClInclude Include="State.h">
       <Filter>StateMachine</Filter>
     </ClInclude>
-    <ClInclude Include="StateGameObject.h">
-      <Filter>StateMachine</Filter>
-    </ClInclude>
     <ClInclude Include="StateMachine.h">
       <Filter>StateMachine</Filter>
     </ClInclude>
@@ -128,6 +125,9 @@
     </ClInclude>
     <ClInclude Include="Header.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StateAIObject.h">
+      <Filter>StateMachine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -176,9 +176,6 @@
     <ClCompile Include="PositionConstraint.cpp">
       <Filter>Physics</Filter>
     </ClCompile>
-    <ClCompile Include="StateGameObject.cpp">
-      <Filter>StateMachine</Filter>
-    </ClCompile>
     <ClCompile Include="StateMachine.cpp">
       <Filter>StateMachine</Filter>
     </ClCompile>
@@ -186,6 +183,9 @@
       <Filter>StateMachine</Filter>
     </ClCompile>
     <ClCompile Include="SMPushBlock.cpp">
+      <Filter>StateMachine</Filter>
+    </ClCompile>
+    <ClCompile Include="StateAIObject.cpp">
       <Filter>StateMachine</Filter>
     </ClCompile>
   </ItemGroup>

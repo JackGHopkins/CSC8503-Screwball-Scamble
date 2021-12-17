@@ -1,4 +1,4 @@
-#include "StateGameObject.h"
+#include "StateAIObject.h"
 #include "StateTransition.h"
 #include "StateMachine.h"
 #include "State.h"

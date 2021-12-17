@@ -6,6 +6,11 @@
 
 namespace NCL {
 	namespace CSC8503 {
+		enum class Gamemode {
+			_GM1 = 0,
+			_GM2
+		};
+
 		enum class FinishState {
 			_NULL = 0,
 			_LOSE,
@@ -14,7 +19,7 @@ namespace NCL {
 
 		class TutorialGame		{
 		public:
-			TutorialGame();
+			TutorialGame(bool gm1);
 			~TutorialGame();
 
 			virtual void UpdateGame(float dt);
@@ -28,6 +33,7 @@ namespace NCL {
 			void PrintLose();
 
 			FinishState fState;
+			Gamemode gMode;
 		protected:
 			void InitialiseAssets();
 
@@ -46,6 +52,7 @@ namespace NCL {
 			void InitCollisionTest();
 			void InitDefaultFloor();
 			void InitGamemode1();
+			void InitGamemode2();
 			void BridgeConstraintTest();
 	
 			bool SelectObject(float dt);
@@ -54,8 +61,6 @@ namespace NCL {
 			void DebugMenu();
 			void DebugObject();
 			void LockedObjectMovement();
-
-
 
 			GameObject* AddFloorToWorld(const Vector3& position);
 			GameObject* AddSphereToWorld(const Vector3& position, float radius, float inverseMass = 10.0f, GameObjectType type = GameObjectType::_NULL);
@@ -73,7 +78,6 @@ namespace NCL {
 			GameObject* AddEnemyToWorld(const Vector3& position);
 			GameObject* AddBonusToWorld(const Vector3& position);
 			StateGameObject* AddStateObjectToWorld(const Vector3& position);
-
 
 			GameObject* fallingLog;
 			GameObject* ball;
@@ -116,7 +120,6 @@ namespace NCL {
 			void LockCameraToObject(GameObject* o) {
 				lockedObject = o;
 			}
-
 		};
 	}
 }

@@ -10,6 +10,7 @@ namespace NCL {
 
 			virtual void Update(float dt);
 
+			Vector3 targetPos;
 		protected:
 			void MoveLeft(float dt);
 			void MoveRight(float dt);

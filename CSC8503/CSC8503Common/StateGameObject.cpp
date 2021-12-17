@@ -9,6 +9,7 @@ using namespace CSC8503;
 StateGameObject::StateGameObject() {
 	counter = 0.0f;
 	stateMachine = new StateMachine();
+	targetPos = GetTransform().GetPosition();
 
 	State* stateA = new State([&](float dt)-> void
 		{
@@ -27,7 +28,7 @@ StateGameObject::StateGameObject() {
 	stateMachine->AddTransition(new StateTransition(stateA, stateB,
 		[&]()-> bool
 		{
-			return this->counter > 3.0f;
+			return this->counter > 1.0f;
 		}
 	));
 	stateMachine->AddTransition(new StateTransition(stateB, stateA,
@@ -47,11 +48,11 @@ StateGameObject ::~StateGameObject() {
 }
 
  void StateGameObject::MoveLeft(float dt) {
-	 GetPhysicsObject()->AddForce({ -100, 0, 0 });
+	 GetPhysicsObject()->AddForce(GetTransform().GetPosition() - targetPos);
 	 counter += dt;
  }
 
  void StateGameObject::MoveRight(float dt) {
-	 GetPhysicsObject()->AddForce({ 100, 0, 0 });
+	 GetPhysicsObject()->AddForce(targetPos - GetTransform().GetPosition());
 	 counter -= dt;
  }

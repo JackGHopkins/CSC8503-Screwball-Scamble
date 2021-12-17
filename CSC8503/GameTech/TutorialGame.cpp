@@ -9,20 +9,23 @@
 using namespace NCL;
 using namespace CSC8503;
 
-TutorialGame::TutorialGame()	{
+TutorialGame::TutorialGame(bool gm1)	{
 	world		= new GameWorld();
 	renderer	= new GameTechRenderer(*world);
 	physics		= new PhysicsSystem(*world);
 
 	forceMagnitude	= 10.0f;
-	useGravity		= true;
+	useGravity		= false;
 	inSelectionMode = true;
 	debugMenu		= false;
 	debugObject		= false;
 	finished		= false;
-	timer			= 5.0f;
+	timer			= 100.0f;
 	score			= 0;
 	fState			= FinishState::_NULL;
+	gMode			= (gm1) ? Gamemode::_GM1 : Gamemode::_GM2;
+
+	
 
 	Debug::SetRenderer(renderer);
 
@@ -42,20 +45,12 @@ void NCL::CSC8503::TutorialGame::PrintWin()
 {
 	renderer->DrawString("Game: WON", Vector2(10, 10));
 	renderer->DrawString("Press '0' to Quit", Vector2(10, 20));;
-	while (!Window::GetKeyboard()->KeyPressed(KeyboardKeys::NUM0))
-	{
-
-	}
 }
 
 void NCL::CSC8503::TutorialGame::PrintLose()
 {
 	renderer->DrawString("Game: LOSE", Vector2(10, 10));
 	renderer->DrawString("Press '0' to Quit", Vector2(10, 20));;
-	while (!Window::GetKeyboard()->KeyPressed(KeyboardKeys::NUM0))
-	{
-		
-	}
 }
 
 /*
@@ -152,8 +147,10 @@ void TutorialGame::UpdateGame(float dt) {
 		//Debug::DrawAxisLines(lockedObject->GetTransform().GetMatrix(), 2.0f);
 	}
 
-	if (testStateObject)
+	if (testStateObject) {
+		testStateObject->targetPos = ball->GetTransform().GetPosition();
 		testStateObject->Update(dt);
+	}
 
 	if (debugMenu)
 		DebugMenu();
@@ -286,14 +283,6 @@ void TutorialGame::DebugObjectMovement() {
 //If we've selected an object, we can manipulate it with some key presses
 	if (inSelectionMode && selectionObject) {
 		//Twist the selected object!
-		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::LEFT)) {
-			selectionObject->GetPhysicsObject()->AddTorque(Vector3(-10, 0, 0));
-		}
-
-		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::RIGHT)) {
-			selectionObject->GetPhysicsObject()->AddTorque(Vector3(10, 0, 0));
-		}
-
 		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::NUM7)) {
 			selectionObject->GetPhysicsObject()->AddTorque(Vector3(0, 10, 0));
 		}
@@ -302,8 +291,17 @@ void TutorialGame::DebugObjectMovement() {
 			selectionObject->GetPhysicsObject()->AddTorque(Vector3(0, -10, 0));
 		}
 
-		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::RIGHT)) {
+		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::NUM5)) {
 			selectionObject->GetPhysicsObject()->AddTorque(Vector3(10, 0, 0));
+		}
+
+		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::NUM4)) {
+			selectionObject->GetPhysicsObject()->AddTorque(Vector3(-10, 0, 0));
+		}
+
+		//Movement
+		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::RIGHT)) {
+			selectionObject->GetPhysicsObject()->AddForce(Vector3(10, 0, 0));
 		}
 
 		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::UP)) {
@@ -314,8 +312,8 @@ void TutorialGame::DebugObjectMovement() {
 			selectionObject->GetPhysicsObject()->AddForce(Vector3(0, 0, 10));
 		}
 
-		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::NUM5)) {
-			selectionObject->GetPhysicsObject()->AddForce(Vector3(0, -10, 0));
+		if (Window::GetKeyboard()->KeyDown(KeyboardKeys::LEFT)) {
+			selectionObject->GetPhysicsObject()->AddForce(Vector3(-10, 0, 0));
 		}
 	}
 
@@ -339,7 +337,11 @@ void TutorialGame::InitWorld() {
 	//InitDefaultFloor();
 	//BridgeConstraintTest();
 	//testStateObject = AddStateObjectToWorld(Vector3(0, 10, 0));
-	InitGamemode1();
+	if (gMode == Gamemode::_GM1)
+		InitGamemode1();
+
+	if (gMode == Gamemode::_GM2)
+		InitGamemode2();
 	//InitCollisionTest();
 }
 
@@ -420,6 +422,31 @@ void TutorialGame::InitGamemode1(){
 	coins.emplace_back(AddSphereToWorld(Vector3(-12, 4, 16), 1.0f, 1.0f, GameObjectType::_COIN));
 	coins.emplace_back(AddSphereToWorld(Vector3(10, 4, 9), 1.0f, 1.0f, GameObjectType::_COIN));
 	coins.emplace_back(AddSphereToWorld(Vector3(-14, 4, 9), 1.0f, 1.0f, GameObjectType::_COIN));
+}
+
+void TutorialGame::InitGamemode2() {
+	// Ball
+	ball = AddSphereToWorld(Vector3(15, 2, 15), 0.5f, 1.0f);
+
+	// Base Floor
+	AddCubeToWorld(Vector3(0, 0, 0), Vector3(20, 1, 20), Quaternion(0, 0, 0, 1), 0, GameObjectType::_FLOOR);
+
+	// Outer Walls
+	AddCubeToWorld(Vector3(19, 0, 0), Vector3(1, 4, 20), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
+	AddCubeToWorld(Vector3(-19, 0, 0), Vector3(1, 4, 20), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
+	AddCubeToWorld(Vector3(0, 0, 19), Vector3(20, 4, 1), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
+	AddCubeToWorld(Vector3(0, 0, -19), Vector3(20, 4, 1), Quaternion(0, 0, 0, 1), 0, GameObjectType::_WALL);
+
+	// Inner Walls
+	AddCubeToWorld(Vector3(0, 0, -11), Vector3(10, 4, 1), Quaternion(0, 0, 0, 1), 0, GameObjectType::_SLIME);
+	AddCubeToWorld(Vector3(0, 0, 11), Vector3(10, 4, 1), Quaternion(0, 0, 0, 1), 0, GameObjectType::_SLIME);
+	AddCubeToWorld(Vector3(11, 0, -5), Vector3(1, 4, 7), Quaternion(0, 0, 0, 1), 0, GameObjectType::_SLIME);
+	AddCubeToWorld(Vector3(-11, 0, -5), Vector3(1, 4, 7), Quaternion(0, 0, 0, 1), 0, GameObjectType::_SLIME);
+	AddCubeToWorld(Vector3(0, 0, 5), Vector3(1, 4, 7), Quaternion(0, 0, 0, 1), 0, GameObjectType::_SLIME);
+
+	// Enemy
+	testStateObject = AddStateObjectToWorld(Vector3(-15, 2, 15));
+	//AddEnemyToWorld(Vector3(-15, 4, -15));
 }
 
 //void TutorialGame::BridgeConstraintTest() {
@@ -749,7 +776,7 @@ GameObject* TutorialGame::AddBonusToWorld(const Vector3& position) {
 StateGameObject* TutorialGame::AddStateObjectToWorld(const Vector3& position) {
 	StateGameObject* apple = new StateGameObject();
 
-	SphereVolume* volume = new SphereVolume(0.25f);
+	SphereVolume* volume = new SphereVolume(1.0f);
 	apple->SetBoundingVolume((CollisionVolume*)volume);
 	apple->GetTransform()
 		.SetScale(Vector3(0.25, 0.25, 0.25))
@@ -760,6 +787,8 @@ StateGameObject* TutorialGame::AddStateObjectToWorld(const Vector3& position) {
 
 	apple->GetPhysicsObject()->SetInverseMass(1.0f);
 	apple->GetPhysicsObject()->InitSphereInertia();
+
+	apple->targetPos = ball->GetTransform().GetPosition();
 
 	world->AddGameObject(apple);
 
@@ -884,8 +913,13 @@ void TutorialGame::UpdateObjectState(float dt) {
 
 void TutorialGame::UpdateTimer(float dt) {
 	timer = (!finished) ? timer -= dt : timer;
-	finished = (timer >= 0) ? false : true;
-	fState = (timer >= 0) ? FinishState::_NULL : FinishState::_LOSE;
+
+	if (timer <= 0){
+		finished = true;
+		fState = FinishState::_LOSE;
+	}
+	//finished = (timer >= 0) ? false : true;
+	//fState = (timer >= 0) ? FinishState::_NULL : FinishState::_LOSE;
 	renderer->DrawString("Time:" + std::to_string(round(int(timer * 100)) / 100), Vector2(70, 5));
 	renderer->DrawString("Score:" + std::to_string(round(score)), Vector2(70, 10));
 }
@@ -896,11 +930,12 @@ added linear motion into our physics system. After the second tutorial, objects 
 line - after the third, they'll be able to twist under torque aswell.
 */
 void TutorialGame::MoveSelectedObject() {
-	renderer->DrawString("Click Force:" + std::to_string(forceMagnitude), Vector2(0, 40)); //Draw debug text at 10,20
-	forceMagnitude += Window::GetMouse()->GetWheelMovement() * 100.0f;
-
 	if (!selectionObject) {
 		return;//we havent selected anything! 
+	}
+	else {
+		renderer->DrawString("Click Force:" + std::to_string(forceMagnitude), Vector2(0, 40)); //Draw debug text at 10,20
+		forceMagnitude += Window::GetMouse()->GetWheelMovement() * 100.0f;
 	}
 	//Push the selected object!
 	if (Window::GetMouse()->ButtonPressed(NCL::MouseButtons::RIGHT)) {

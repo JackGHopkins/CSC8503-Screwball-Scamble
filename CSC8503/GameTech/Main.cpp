@@ -162,23 +162,25 @@ public:
 	~PauseScreen() {};
 
 	PushdownResult OnUpdate(float dt, PushdownState** newState) override {
-		if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::P)) {
+		if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::P) || Window::GetKeyboard()->KeyPressed(KeyboardKeys::NUM0)) {
 			return PushdownResult::Pop;
 		}
 		return PushdownResult::NoChange;
 	}
 	void OnAwake() override {
 	}
-protected:
-	//PauseMenu* g;
 };
 
 class GameScreen : public PushdownState {
 public:
-	GameScreen() { g = new TutorialGame(); }
+	GameScreen(bool gm1) { 
+		g = new TutorialGame(gm1);
+	}
 	//~GameScreen() { delete g; };
-
 	PushdownResult OnUpdate(float dt, PushdownState** newState) override {
+			if (g->fState != FinishState::_NULL)
+				return PushdownResult::Pop;
+
 			if (g) 
 				g->UpdateGame(dt);
 
@@ -194,11 +196,15 @@ public:
 
 			if (g->fState == FinishState::_LOSE) {
 				g->PrintLose();
-				return PushdownResult::Pop;
+				g->UpdateGame(dt);
+				*newState = new PauseScreen(g);
+				return PushdownResult::Push;
 			}	
 			if (g->fState == FinishState::_WIN) {
 				g->PrintWin();
-				return PushdownResult::Pop;
+				g->UpdateGame(dt);
+				*newState = new PauseScreen(g);
+				return PushdownResult::Push;
 			}
 			return PushdownResult::NoChange;
 	};
@@ -212,11 +218,11 @@ class IntroScreen : public PushdownState {
 	~IntroScreen() { delete g; };
 	PushdownResult OnUpdate(float dt, PushdownState** newState) override {
 		if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::NUM1)) {
-			*newState = new GameScreen();
+			*newState = new GameScreen(true);
 			return PushdownResult::Push;
 		}
 		if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::NUM2)) {
-			*newState = new GameScreen();
+			*newState = new GameScreen(false);
 			return PushdownResult::Push;
 		}
 		if (Window::GetKeyboard()->KeyPressed(KeyboardKeys::ESCAPE)) {
@@ -275,11 +281,9 @@ int main() {
 	//TestBehaviourTree();
 	Window*w = Window::CreateGameWindow("CSC8503 Game technology!", 1280, 720);
 
-
 	if (!w->HasInitialised()) {
 		return -1;
 	}	
-	
 	
 	srand(time(0));
 	/*w->ShowOSPointer(true);
